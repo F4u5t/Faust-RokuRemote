@@ -319,34 +319,47 @@ class RokuEcpClient {
   }
 
   /**
-   * Deep links directly into a YouTube TV channel or search query (App ID 195316)
+   * Deep links into YouTube TV (App ID 195316) or launches cleanly
    */
-  async launchYouTubeTvChannel(ip, contentId, query = '') {
+  async launchYouTubeTvChannel(ip, rawContentId, query = '') {
     const baseUrl = this.getBaseUrl(ip);
-    let url = `${baseUrl}/launch/195316`;
+    let launchUrl = `${baseUrl}/launch/195316`;
     const params = new URLSearchParams();
 
-    if (contentId) {
-      params.append('contentId', contentId);
+    let cleanId = (rawContentId || '').trim();
+    // Extract 11-char YouTube ID if URL passed
+    if (cleanId.includes('v=')) {
+      cleanId = cleanId.split('v=')[1].split('&')[0];
+    } else if (cleanId.includes('youtu.be/')) {
+      cleanId = cleanId.split('youtu.be/')[1].split('?')[0];
+    }
+
+    // Only pass contentId if it's a valid 11-character YouTube video / live ID
+    // Passing slugs like "espn" causes YouTube TV to error "This Video is not available"
+    const isValidYouTubeId = /^[a-zA-Z0-9_-]{11}$/.test(cleanId);
+
+    if (isValidYouTubeId) {
+      params.append('contentId', cleanId);
       params.append('mediaType', 'live');
     }
+
     if (query) {
       params.append('query', query);
     }
 
     const qs = params.toString();
     if (qs) {
-      url += `?${qs}`;
+      launchUrl += `?${qs}`;
     }
 
     try {
-      const response = await axios.post(url, '', {
+      const response = await axios.post(launchUrl, '', {
         headers: { 'Content-Length': '0' },
         timeout: 4000
       });
-      return { success: true, status: response.status, contentId, query };
+      return { success: true, status: response.status, contentId: isValidYouTubeId ? cleanId : null, launchedUrl: launchUrl };
     } catch (err) {
-      this.handleEcpError(err, `tune YouTube TV channel '${contentId || query}'`);
+      this.handleEcpError(err, `tune YouTube TV`);
     }
   }
 }
