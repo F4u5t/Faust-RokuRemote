@@ -1,0 +1,26 @@
+[
+  {
+    "id": "bookmark-1",
+    "title": "Home Assistant Dashboard",
+    "url": "http://homeassistant.local:8123",
+    "icon": "layout-dashboard",
+    "strategy": "dev_channel",
+    "description": "Smart home control and monitoring dashboard"
+  },
+  {
+    "id": "bookmark-2",
+    "title": "Custom TV Dashboard",
+    "url": "https://weather.com",
+    "icon": "globe",
+    "strategy": "dev_channel",
+    "description": "Weather and live status widgets"
+  },
+  {
+    "id": "bookmark-3",
+    "title": "Media Stream / Web Video",
+    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "icon": "video",
+    "strategy": "play_on_roku",
+    "description": "Direct video/stream player on Roku (Channel 15985)"
+  }
+]

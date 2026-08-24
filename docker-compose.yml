@@ -1,0 +1,21 @@
+services:
+  faust-rokuremote:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: faust-rokuremote
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+    # Optional: Persist saved web app bookmarks across container updates
+    volumes:
+      - roku_bookmarks_data:/app/server
+    # Optional: If your Dokploy host is on the same local LAN as your Roku TV,
+    # network_mode: host gives maximum performance and direct LAN subnet/SSDP discovery.
+    # network_mode: host
+
+volumes:
+  roku_bookmarks_data:
