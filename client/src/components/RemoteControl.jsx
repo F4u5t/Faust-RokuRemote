@@ -18,7 +18,8 @@ import {
   Rewind,
   Tv2,
   Search,
-  Sliders
+  Sliders,
+  Tv
 } from 'lucide-react';
 import KeyboardInput from './KeyboardInput';
 
@@ -27,6 +28,7 @@ export default function RemoteControl({
   onSendText,
   audioState = { volume: 15, muted: false },
   onSetVolume,
+  activeApp,
   disabled
 }) {
   const [localVol, setLocalVol] = useState(audioState?.volume ?? 15);
@@ -71,9 +73,43 @@ export default function RemoteControl({
   const isMuted = audioState?.muted;
 
   return (
-    <div className="w-full flex flex-col items-center gap-4 py-1">
+    <div className="w-full flex flex-col items-center gap-3.5 py-1">
       
-      {/* Top TV Power, Inputs & Global Actions */}
+      {/* Top: Currently Playing Card (Moved Above Remote) */}
+      {activeApp && activeApp.name && activeApp.name !== 'Home' && (
+        <div className="w-full bg-gradient-to-r from-purple-950/60 via-slate-900 to-slate-900 border border-purple-500/40 rounded-2xl p-2.5 flex items-center justify-between shadow-lg animate-in fade-in">
+          <div className="flex items-center gap-3 overflow-hidden">
+            {activeApp.iconUrl ? (
+              <img
+                src={activeApp.iconUrl}
+                alt={activeApp.name}
+                className="w-9 h-9 rounded-xl object-cover bg-slate-800 shadow shrink-0"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-xl bg-purple-600/30 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0">
+                <Play className="w-4 h-4 fill-current" />
+              </div>
+            )}
+            <div className="overflow-hidden">
+              <div className="text-[10px] uppercase font-bold text-purple-400 tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                <span>Currently Playing</span>
+              </div>
+              <div className="text-sm font-bold text-slate-100 truncate">
+                {activeApp.name}
+              </div>
+            </div>
+          </div>
+          {activeApp.id && (
+            <span className="text-[10px] font-mono text-slate-500 bg-slate-950/60 px-2 py-0.5 rounded-md border border-slate-800 shrink-0">
+              {activeApp.id}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* TV Power, Inputs & Global Actions */}
       <div className="w-full bg-slate-900/70 backdrop-blur border border-slate-800 rounded-2xl p-3 shadow-lg">
         <div className="flex items-center justify-between gap-2">
           {/* Power Button */}

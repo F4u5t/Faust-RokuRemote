@@ -354,6 +354,7 @@ export default function App() {
                   onSendText={handleSendText}
                   audioState={audioState}
                   onSetVolume={handleSetVolume}
+                  activeApp={activeApp}
                   disabled={!activeDevice}
                 />
               </div>
@@ -456,6 +457,7 @@ export default function App() {
                   onSendText={handleSendText}
                   audioState={audioState}
                   onSetVolume={handleSetVolume}
+                  activeApp={activeApp}
                   disabled={!activeDevice}
                 />
               </div>

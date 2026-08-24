@@ -133,9 +133,9 @@ export default function AppsGrid({
   );
 
   return (
-    <div className="w-full space-y-4 py-2">
+    <div className="w-full flex flex-col gap-3">
       
-      {/* Search and Refresh Bar */}
+      {/* Search and Refresh Bar (Sticky at top of channels workspace) */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -157,101 +157,190 @@ export default function AppsGrid({
         </button>
       </div>
 
-      {/* Currently Active App Banner */}
-      {activeApp && activeApp.name && activeApp.name !== 'Home' && (
-        <div className="bg-gradient-to-r from-purple-950/40 via-slate-900 to-slate-900 border border-purple-500/30 rounded-2xl p-3 flex items-center justify-between shadow-lg">
-          <div className="flex items-center gap-3">
-            {activeApp.iconUrl ? (
-              <img
-                src={activeApp.iconUrl}
-                alt={activeApp.name}
-                className="w-10 h-10 rounded-xl object-cover bg-slate-800 shadow"
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
+      {/* Touch-Friendly Scrollable Channels Workspace Container */}
+      <div className="touch-scroll-panel max-h-[calc(100vh-210px)] md:max-h-[calc(100vh-190px)] space-y-4 pr-1.5 pb-2">
+        
+        {/* Quick Favorites Section & Drop Zone */}
+        {!searchQuery && (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsOverFavoritesZone(true);
+            }}
+            onDragLeave={() => setIsOverFavoritesZone(false)}
+            onDrop={(e) => handleFavoritesDrop(e)}
+            className={`rounded-3xl p-3.5 transition-all ${
+              isOverFavoritesZone
+                ? 'bg-purple-950/40 border-2 border-dashed border-purple-400 shadow-xl shadow-purple-900/30'
+                : 'bg-slate-900/70 border border-slate-800 shadow-md'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2.5 px-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Favorites & Quick Launch</span>
+              </div>
+              <span className="text-[10px] text-slate-500 font-medium">
+                Drag channels here to pin
+              </span>
+            </div>
+
+            {favoriteApps.length === 0 ? (
+              <div className="border-2 border-dashed border-slate-800 rounded-2xl p-6 text-center text-slate-400">
+                <PlusCircle className="w-6 h-6 mx-auto mb-1.5 text-purple-400/80" />
+                <p className="text-xs font-medium">No favorite channels pinned yet.</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Drag any channel from below or tap the ⭐ icon to add it.
+                </p>
+              </div>
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-purple-600/30 flex items-center justify-center text-purple-300">
-                <Play className="w-5 h-5" />
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
+                {favoriteApps.map((app, index) => {
+                  const isActive = activeApp && String(activeApp.id) === String(app.id);
+                  return (
+                    <div
+                      key={`fav-${app.id}`}
+                      draggable
+                      onDragStart={(e) => handleDragStart(app.id, 'favorites', e)}
+                      onDragEnd={handleDragEnd}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.stopPropagation();
+                        handleFavoritesDrop(e, index);
+                      }}
+                      className={`group relative flex flex-col items-center bg-slate-800/80 hover:bg-slate-700/80 border rounded-2xl p-2 transition-all shadow cursor-grab active:cursor-grabbing ${
+                        isActive ? 'border-emerald-500/60 bg-emerald-950/30' : 'border-slate-700/60 hover:border-purple-500/50'
+                      }`}
+                    >
+                      {/* Star Unpin Button */}
+                      <button
+                        onClick={(e) => toggleFavorite(app.id, e)}
+                        title="Remove from favorites"
+                        className="absolute top-1 right-1 p-1 rounded-full bg-slate-900/80 hover:bg-red-950 text-amber-400 hover:text-red-400 transition-colors z-10"
+                      >
+                        <Star className="w-3 h-3 fill-amber-400" />
+                      </button>
+
+                      {/* Launch Button */}
+                      <button
+                        onClick={() => onLaunchApp(app.id)}
+                        disabled={disabled}
+                        className="w-full flex flex-col items-center"
+                      >
+                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center mb-1.5 shadow-inner">
+                          <img
+                            src={app.iconUrl}
+                            alt={app.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                        <span className="text-[11px] font-medium text-slate-200 truncate w-full text-center">
+                          {app.name}
+                        </span>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
-            <div>
-              <div className="text-[10px] uppercase font-bold text-purple-400 tracking-wider flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                Currently Playing
-              </div>
-              <div className="text-sm font-bold text-slate-100">{activeApp.name}</div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Quick Favorites Section & Drop Zone */}
-      {!searchQuery && (
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsOverFavoritesZone(true);
-          }}
-          onDragLeave={() => setIsOverFavoritesZone(false)}
-          onDrop={(e) => handleFavoritesDrop(e)}
-          className={`rounded-3xl p-3.5 transition-all ${
-            isOverFavoritesZone
-              ? 'bg-purple-950/40 border-2 border-dashed border-purple-400 shadow-xl shadow-purple-900/30'
-              : 'bg-slate-900/70 border border-slate-800 shadow-md'
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2.5 px-1">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300 uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Favorites & Quick Launch</span>
+            {/* Drag to Remove Drop Zone */}
+            {draggedAppId && dragSource === 'favorites' && (
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsOverRemoveZone(true);
+                }}
+                onDragLeave={() => setIsOverRemoveZone(false)}
+                onDrop={handleRemoveDrop}
+                className={`mt-3 border-2 border-dashed rounded-2xl p-3 text-center transition-all ${
+                  isOverRemoveZone
+                    ? 'bg-red-950/60 border-red-500 text-red-300 scale-102'
+                    : 'bg-slate-950/50 border-red-900/40 text-red-400/80'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-1.5 text-xs font-semibold">
+                  <Trash2 className="w-4 h-4 text-red-400" />
+                  <span>Drop here to remove from Favorites</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* All Installed Channels Grid */}
+        <div>
+          <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">
+            <div className="flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-purple-400" />
+              <span>All Installed Channels ({filteredApps.length})</span>
             </div>
-            <span className="text-[10px] text-slate-500 font-medium">
-              Drag channels here to pin
+            <span className="text-[10px] text-slate-500 lowercase">
+              drag or tap ⭐ to pin
             </span>
           </div>
 
-          {favoriteApps.length === 0 ? (
-            <div className="border-2 border-dashed border-slate-800 rounded-2xl p-6 text-center text-slate-400">
-              <PlusCircle className="w-6 h-6 mx-auto mb-1.5 text-purple-400/80" />
-              <p className="text-xs font-medium">No favorite channels pinned yet.</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Drag any channel from below or tap the ⭐ icon to add it.
-              </p>
+          {filteredApps.length === 0 ? (
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
+              {apps.length === 0 ? (
+                <div>
+                  <p className="text-sm font-medium mb-2">No apps loaded.</p>
+                  <p className="text-xs text-slate-500 mb-3">Ensure your Roku TV is turned on and connected.</p>
+                  <button
+                    onClick={onRefreshApps}
+                    className="px-3 py-1.5 rounded-lg bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-medium hover:bg-purple-600/40 transition-colors"
+                  >
+                    Fetch Installed Apps
+                  </button>
+                </div>
+              ) : (
+                <p className="text-sm">No channels match "{searchQuery}"</p>
+              )}
             </div>
           ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
-              {favoriteApps.map((app, index) => {
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              {filteredApps.map((app) => {
+                const isFav = favoriteIds.includes(String(app.id));
                 const isActive = activeApp && String(activeApp.id) === String(app.id);
+
                 return (
                   <div
-                    key={`fav-${app.id}`}
+                    key={app.id}
                     draggable
-                    onDragStart={(e) => handleDragStart(app.id, 'favorites', e)}
+                    onDragStart={(e) => handleDragStart(app.id, 'all', e)}
                     onDragEnd={handleDragEnd}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.stopPropagation();
-                      handleFavoritesDrop(e, index);
-                    }}
-                    className={`group relative flex flex-col items-center bg-slate-800/80 hover:bg-slate-700/80 border rounded-2xl p-2 transition-all shadow cursor-grab active:cursor-grabbing ${
-                      isActive ? 'border-emerald-500/60 bg-emerald-950/30' : 'border-slate-700/60 hover:border-purple-500/50'
+                    className={`group relative flex flex-col items-center bg-slate-900/80 hover:bg-slate-800 border rounded-2xl p-2.5 transition-all text-center shadow-md cursor-grab active:cursor-grabbing ${
+                      isActive ? 'border-emerald-500/60 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'
                     }`}
                   >
-                    {/* Star Unpin Button */}
+                    {/* Star Pin/Unpin Toggle */}
                     <button
                       onClick={(e) => toggleFavorite(app.id, e)}
-                      title="Remove from favorites"
-                      className="absolute top-1 right-1 p-1 rounded-full bg-slate-900/80 hover:bg-red-950 text-amber-400 hover:text-red-400 transition-colors z-10"
+                      title={isFav ? 'Remove from favorites' : 'Add to favorites'}
+                      className={`absolute top-1.5 right-1.5 p-1 rounded-full transition-colors z-10 ${
+                        isFav
+                          ? 'bg-amber-950/80 text-amber-400'
+                          : 'bg-slate-950/70 text-slate-500 hover:text-amber-400 opacity-0 group-hover:opacity-100'
+                      }`}
                     >
-                      <Star className="w-3 h-3 fill-amber-400" />
+                      <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-amber-400' : ''}`} />
                     </button>
 
-                    {/* Launch Button */}
+                    {/* Active Indicator */}
+                    {isActive && (
+                      <span className="absolute top-1.5 left-1.5 w-2 h-2 rounded-full bg-emerald-400 shadow-sm" />
+                    )}
+
+                    {/* Click to Launch */}
                     <button
                       onClick={() => onLaunchApp(app.id)}
                       disabled={disabled}
                       className="w-full flex flex-col items-center"
                     >
-                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center mb-1.5 shadow-inner">
+                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800 flex items-center justify-center mb-2 shadow">
                         <img
                           src={app.iconUrl}
                           alt={app.name}
@@ -261,8 +350,11 @@ export default function AppsGrid({
                           }}
                         />
                       </div>
-                      <span className="text-[11px] font-medium text-slate-200 truncate w-full text-center">
+                      <span className="text-xs font-semibold text-slate-200 line-clamp-1 w-full">
                         {app.name}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono mt-0.5">
+                        ID: {app.id}
                       </span>
                     </button>
                   </div>
@@ -270,122 +362,8 @@ export default function AppsGrid({
               })}
             </div>
           )}
-
-          {/* Drag to Remove Drop Zone */}
-          {draggedAppId && dragSource === 'favorites' && (
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setIsOverRemoveZone(true);
-              }}
-              onDragLeave={() => setIsOverRemoveZone(false)}
-              onDrop={handleRemoveDrop}
-              className={`mt-3 border-2 border-dashed rounded-2xl p-3 text-center transition-all ${
-                isOverRemoveZone
-                  ? 'bg-red-950/60 border-red-500 text-red-300 scale-102'
-                  : 'bg-slate-950/50 border-red-900/40 text-red-400/80'
-              }`}
-            >
-              <div className="flex items-center justify-center gap-1.5 text-xs font-semibold">
-                <Trash2 className="w-4 h-4 text-red-400" />
-                <span>Drop here to remove from Favorites</span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* All Installed Channels Grid */}
-      <div>
-        <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">
-          <div className="flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-purple-400" />
-            <span>All Installed Channels ({filteredApps.length})</span>
-          </div>
-          <span className="text-[10px] text-slate-500 lowercase">
-            drag or tap ⭐ to pin
-          </span>
         </div>
 
-        {filteredApps.length === 0 ? (
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-            {apps.length === 0 ? (
-              <div>
-                <p className="text-sm font-medium mb-2">No apps loaded.</p>
-                <p className="text-xs text-slate-500 mb-3">Ensure your Roku TV is turned on and connected.</p>
-                <button
-                  onClick={onRefreshApps}
-                  className="px-3 py-1.5 rounded-lg bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-medium hover:bg-purple-600/40 transition-colors"
-                >
-                  Fetch Installed Apps
-                </button>
-              </div>
-            ) : (
-              <p className="text-sm">No channels match "{searchQuery}"</p>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-            {filteredApps.map((app) => {
-              const isFav = favoriteIds.includes(String(app.id));
-              const isActive = activeApp && String(activeApp.id) === String(app.id);
-
-              return (
-                <div
-                  key={app.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(app.id, 'all', e)}
-                  onDragEnd={handleDragEnd}
-                  className={`group relative flex flex-col items-center bg-slate-900/80 hover:bg-slate-800 border rounded-2xl p-2.5 transition-all text-center shadow-md cursor-grab active:cursor-grabbing ${
-                    isActive ? 'border-emerald-500/60 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  {/* Star Pin/Unpin Toggle */}
-                  <button
-                    onClick={(e) => toggleFavorite(app.id, e)}
-                    title={isFav ? 'Remove from favorites' : 'Add to favorites'}
-                    className={`absolute top-1.5 right-1.5 p-1 rounded-full transition-colors z-10 ${
-                      isFav
-                        ? 'bg-amber-950/80 text-amber-400'
-                        : 'bg-slate-950/70 text-slate-500 hover:text-amber-400 opacity-0 group-hover:opacity-100'
-                    }`}
-                  >
-                    <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-amber-400' : ''}`} />
-                  </button>
-
-                  {/* Active Indicator */}
-                  {isActive && (
-                    <span className="absolute top-1.5 left-1.5 w-2 h-2 rounded-full bg-emerald-400 shadow-sm" />
-                  )}
-
-                  {/* Click to Launch */}
-                  <button
-                    onClick={() => onLaunchApp(app.id)}
-                    disabled={disabled}
-                    className="w-full flex flex-col items-center"
-                  >
-                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800 flex items-center justify-center mb-2 shadow">
-                      <img
-                        src={app.iconUrl}
-                        alt={app.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                    <span className="text-xs font-semibold text-slate-200 line-clamp-1 w-full">
-                      {app.name}
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-mono mt-0.5">
-                      ID: {app.id}
-                    </span>
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
 
     </div>

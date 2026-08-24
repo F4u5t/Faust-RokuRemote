@@ -4,10 +4,41 @@
   body {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
   }
 }
 
-/* Custom scrollbar */
+/* Custom Large Touch-Friendly Scrollbar for Channel & Web Lists */
+.touch-scroll-panel {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+.touch-scroll-panel::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.touch-scroll-panel::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 12px;
+  margin: 4px 0;
+}
+
+.touch-scroll-panel::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.45);
+  border-radius: 12px;
+  border: 2px solid rgba(15, 23, 42, 0.8);
+}
+
+.touch-scroll-panel::-webkit-scrollbar-thumb:hover,
+.touch-scroll-panel::-webkit-scrollbar-thumb:active {
+  background: rgba(192, 132, 252, 0.85);
+}
+
+/* Global scrollbar fallback */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

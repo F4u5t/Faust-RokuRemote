@@ -208,100 +208,102 @@ export default function YouTubeTvPresets({
         </div>
       )}
 
-      {/* Main Presets Grid */}
-      {presets.length === 0 ? (
-        <div className="p-12 text-center bg-slate-900/40 rounded-3xl border border-slate-800 flex flex-col items-center gap-3">
-          <Tv className="w-12 h-12 text-slate-600" />
-          <div className="font-semibold text-slate-300 text-sm">No YouTube TV presets saved yet</div>
-          <p className="text-xs text-slate-500 max-w-sm">
-            Add your favorite sports, news, and entertainment networks to tune instantly with one touch!
-          </p>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-md"
-          >
-            Browse Channel Library
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {presets.map((preset) => {
-            return (
-              <div
-                key={preset.id}
-                draggable={!disabled}
-                onDragStart={(e) => handleDragStart(e, preset.id)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDropOnItem(e, preset.id)}
-                className="group relative bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-red-500/50 rounded-2xl p-3 shadow-lg transition-all duration-200 hover:scale-[1.02] flex flex-col justify-between overflow-hidden"
-              >
-                {/* Visual Gradient Background Accent */}
-                <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${preset.color || 'from-red-600 to-red-800'}`} />
-
-                {/* Top Tile Row: Category & Drag Handle */}
-                <div className="flex items-center justify-between mb-2 mt-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/50">
-                    {preset.category || 'Live'}
-                  </span>
-                  <div
-                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-slate-300 transition-opacity cursor-grab active:cursor-grabbing"
-                    title="Drag to reorder"
-                  >
-                    <GripVertical className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-
-                {/* Center Badge / Channel Name */}
+      {/* Main Presets Grid with Touch Scrollbar */}
+      <div className="touch-scroll-panel max-h-[calc(100vh-210px)] md:max-h-[calc(100vh-190px)] pr-1.5 pb-2">
+        {presets.length === 0 ? (
+          <div className="p-12 text-center bg-slate-900/40 rounded-3xl border border-slate-800 flex flex-col items-center gap-3">
+            <Tv className="w-12 h-12 text-slate-600" />
+            <div className="font-semibold text-slate-300 text-sm">No YouTube TV presets saved yet</div>
+            <p className="text-xs text-slate-500 max-w-sm">
+              Add your favorite sports, news, and entertainment networks to tune instantly with one touch!
+            </p>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-md"
+            >
+              Browse Channel Library
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {presets.map((preset) => {
+              return (
                 <div
-                  className="my-2 flex flex-col items-center justify-center text-center cursor-pointer"
-                  onClick={() => handleDirectCastLink(preset)}
+                  key={preset.id}
+                  draggable={!disabled}
+                  onDragStart={(e) => handleDragStart(e, preset.id)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDropOnItem(e, preset.id)}
+                  className="group relative bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-red-500/50 rounded-2xl p-3 shadow-lg transition-all duration-200 hover:scale-[1.02] flex flex-col justify-between overflow-hidden"
                 >
-                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${preset.color || 'from-red-600 to-red-900'} text-white font-black text-sm flex items-center justify-center shadow-md mb-2 border border-white/10 group-hover:shadow-red-900/40`}>
-                    {preset.title.slice(0, 4)}
+                  {/* Visual Gradient Background Accent */}
+                  <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${preset.color || 'from-red-600 to-red-800'}`} />
+
+                  {/* Top Tile Row: Category & Drag Handle */}
+                  <div className="flex items-center justify-between mb-2 mt-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/50">
+                      {preset.category || 'Live'}
+                    </span>
+                    <div
+                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-slate-300 transition-opacity cursor-grab active:cursor-grabbing"
+                      title="Drag to reorder"
+                    >
+                      <GripVertical className="w-3.5 h-3.5" />
+                    </div>
                   </div>
-                  <h3 className="text-sm font-bold text-slate-100 group-hover:text-red-300 transition-colors line-clamp-1">
-                    {preset.title}
-                  </h3>
-                  <span className="text-[10px] text-slate-400 font-mono mt-0.5">
-                    {preset.slug}
-                  </span>
-                </div>
 
-                {/* Bottom Action: Cast Button & Launch on TV */}
-                <div className="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between gap-1.5">
-                  <button
+                  {/* Center Badge / Channel Name */}
+                  <div
+                    className="my-2 flex flex-col items-center justify-center text-center cursor-pointer"
                     onClick={() => handleDirectCastLink(preset)}
-                    className="flex-1 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30 text-[11px] font-bold flex items-center justify-center gap-1 transition-all"
-                    title="Open stream & Cast to Roku TV"
                   >
-                    <Cast className="w-3 h-3" />
-                    <span>Cast</span>
-                  </button>
+                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${preset.color || 'from-red-600 to-red-900'} text-white font-black text-sm flex items-center justify-center shadow-md mb-2 border border-white/10 group-hover:shadow-red-900/40`}>
+                      {preset.title.slice(0, 4)}
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-100 group-hover:text-red-300 transition-colors line-clamp-1">
+                      {preset.title}
+                    </h3>
+                    <span className="text-[10px] text-slate-400 font-mono mt-0.5">
+                      {preset.slug}
+                    </span>
+                  </div>
 
-                  <button
-                    onClick={() => onTunePreset(preset)}
-                    disabled={disabled}
-                    className="p-1.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
-                    title="Launch YouTube TV app on TV"
-                  >
-                    <Tv className="w-3.5 h-3.5" />
-                  </button>
+                  {/* Bottom Action: Cast Button & Launch on TV */}
+                  <div className="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between gap-1.5">
+                    <button
+                      onClick={() => handleDirectCastLink(preset)}
+                      className="flex-1 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30 text-[11px] font-bold flex items-center justify-center gap-1 transition-all"
+                      title="Open stream & Cast to Roku TV"
+                    >
+                      <Cast className="w-3 h-3" />
+                      <span>Cast</span>
+                    </button>
 
-                  <button
-                    onClick={() => onDeletePreset(preset.id)}
-                    disabled={disabled}
-                    className="p-1.5 rounded-xl text-slate-500 hover:text-red-400 hover:bg-slate-800 transition-colors"
-                    title="Remove Preset"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                    <button
+                      onClick={() => onTunePreset(preset)}
+                      disabled={disabled}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+                      title="Launch YouTube TV app on TV"
+                    >
+                      <Tv className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      onClick={() => onDeletePreset(preset.id)}
+                      disabled={disabled}
+                      className="p-1.5 rounded-xl text-slate-500 hover:text-red-400 hover:bg-slate-800 transition-colors"
+                      title="Remove Preset"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
                 </div>
-
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* 2-Step Pairing Assistant Modal */}
       {showPairingModal && (
