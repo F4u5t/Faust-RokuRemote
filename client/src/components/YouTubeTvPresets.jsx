@@ -208,8 +208,8 @@ export default function YouTubeTvPresets({
         </div>
       )}
 
-      {/* Main Presets Grid with Touch Scrollbar */}
-      <div className="touch-scroll-panel max-h-[calc(100vh-210px)] md:max-h-[calc(100vh-190px)] pr-1.5 pb-2">
+      {/* Main Presets Grid with Touch Scrollbar (Aligned with Remote Height) */}
+      <div className="touch-scroll-panel max-h-[550px] xl:max-h-[575px] pr-1.5 pb-2">
         {presets.length === 0 ? (
           <div className="p-12 text-center bg-slate-900/40 rounded-3xl border border-slate-800 flex flex-col items-center gap-3">
             <Tv className="w-12 h-12 text-slate-600" />
@@ -225,7 +225,7 @@ export default function YouTubeTvPresets({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3">
             {presets.map((preset) => {
               return (
                 <div

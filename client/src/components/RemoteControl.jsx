@@ -75,39 +75,41 @@ export default function RemoteControl({
   return (
     <div className="w-full flex flex-col items-center gap-3.5 py-1">
       
-      {/* Top: Currently Playing Card (Moved Above Remote) */}
-      {activeApp && activeApp.name && activeApp.name !== 'Home' && (
-        <div className="w-full bg-gradient-to-r from-purple-950/60 via-slate-900 to-slate-900 border border-purple-500/40 rounded-2xl p-2.5 flex items-center justify-between shadow-lg animate-in fade-in">
-          <div className="flex items-center gap-3 overflow-hidden">
-            {activeApp.iconUrl ? (
-              <img
-                src={activeApp.iconUrl}
-                alt={activeApp.name}
-                className="w-9 h-9 rounded-xl object-cover bg-slate-800 shadow shrink-0"
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
-            ) : (
-              <div className="w-9 h-9 rounded-xl bg-purple-600/30 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0">
-                <Play className="w-4 h-4 fill-current" />
-              </div>
-            )}
-            <div className="overflow-hidden">
-              <div className="text-[10px] uppercase font-bold text-purple-400 tracking-wider flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                <span>Currently Playing</span>
-              </div>
-              <div className="text-sm font-bold text-slate-100 truncate">
-                {activeApp.name}
-              </div>
+      {/* Top: Stable Now Playing / Device Status Card (Above Remote) */}
+      <div className="w-full bg-gradient-to-r from-purple-950/50 via-slate-900 to-slate-900 border border-purple-500/30 rounded-2xl p-2.5 flex items-center justify-between shadow-lg">
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          {activeApp?.iconUrl ? (
+            <img
+              src={activeApp.iconUrl}
+              alt={activeApp.name}
+              className="w-9 h-9 rounded-xl object-cover bg-slate-800 shadow shrink-0"
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0">
+              <Tv className="w-4 h-4" />
+            </div>
+          )}
+          <div className="overflow-hidden">
+            <div className="text-[10px] uppercase font-bold text-purple-400 tracking-wider flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${activeApp?.name && activeApp.name !== 'Home' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`}></span>
+              <span>{activeApp?.name && activeApp.name !== 'Home' ? 'Currently Playing' : 'Roku TV'}</span>
+            </div>
+            <div className="text-sm font-bold text-slate-100 truncate">
+              {activeApp?.name || 'Home Screen'}
             </div>
           </div>
-          {activeApp.id && (
-            <span className="text-[10px] font-mono text-slate-500 bg-slate-950/60 px-2 py-0.5 rounded-md border border-slate-800 shrink-0">
-              {activeApp.id}
-            </span>
-          )}
         </div>
-      )}
+        {activeApp?.id ? (
+          <span className="text-[10px] font-mono text-slate-500 bg-slate-950/60 px-2 py-0.5 rounded-md border border-slate-800 shrink-0">
+            {activeApp.id}
+          </span>
+        ) : (
+          <span className="text-[10px] font-semibold text-slate-500 bg-slate-950/40 px-2 py-0.5 rounded-md border border-slate-800 shrink-0">
+            Active
+          </span>
+        )}
+      </div>
 
       {/* TV Power, Inputs & Global Actions */}
       <div className="w-full bg-slate-900/70 backdrop-blur border border-slate-800 rounded-2xl p-3 shadow-lg">

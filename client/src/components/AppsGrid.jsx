@@ -157,8 +157,8 @@ export default function AppsGrid({
         </button>
       </div>
 
-      {/* Touch-Friendly Scrollable Channels Workspace Container */}
-      <div className="touch-scroll-panel max-h-[calc(100vh-210px)] md:max-h-[calc(100vh-190px)] space-y-4 pr-1.5 pb-2">
+      {/* Touch-Friendly Scrollable Channels Workspace Container (Aligned with Remote Height) */}
+      <div className="touch-scroll-panel max-h-[550px] xl:max-h-[575px] space-y-4 pr-1.5 pb-2">
         
         {/* Quick Favorites Section & Drop Zone */}
         {!searchQuery && (
@@ -194,7 +194,7 @@ export default function AppsGrid({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10 gap-2.5">
                 {favoriteApps.map((app, index) => {
                   const isActive = activeApp && String(activeApp.id) === String(app.id);
                   return (
@@ -301,7 +301,7 @@ export default function AppsGrid({
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3">
               {filteredApps.map((app) => {
                 const isFav = favoriteIds.includes(String(app.id));
                 const isActive = activeApp && String(activeApp.id) === String(app.id);

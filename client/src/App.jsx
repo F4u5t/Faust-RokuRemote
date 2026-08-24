@@ -123,7 +123,7 @@ export default function App() {
   const fetchActiveApp = async (ip) => {
     try {
       const res = await axios.get(`/api/roku/active-app?ip=${encodeURIComponent(ip)}`);
-      if (res.data.success) {
+      if (res.data.success && res.data.activeApp) {
         setActiveApp(res.data.activeApp);
       }
     } catch (e) {
@@ -202,13 +202,11 @@ export default function App() {
     if (!activeDevice) return;
     try {
       await axios.post('/api/roku/launch', { ip: activeDevice.ip, appId });
-      setTimeout(() => fetchActiveApp(activeDevice.ip), 1000);
+      setTimeout(() => fetchActiveApp(activeDevice.ip), 800);
     } catch (e) {
       console.error('Failed to launch app:', e);
     }
   };
-
-  // --- YouTube TV Presets Handlers ---
 
   const fetchYouTubePresets = async () => {
     try {
@@ -340,15 +338,15 @@ export default function App() {
       )}
 
       {/* Main Responsive Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-4 overflow-y-auto pb-24 md:pb-6">
+      <main className="flex-1 w-full max-w-[1700px] mx-auto px-3 sm:px-6 py-3 overflow-y-auto pb-24 md:pb-4">
         
         {/* Split Dashboard View (Tablet / Desktop) */}
         {activeTab === 'split' ? (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
             
             {/* Left Column: Tactile Remote Control with Vertical Volume Panel */}
-            <div className="md:col-span-6 lg:col-span-5 sticky top-20 flex justify-center">
-              <div className="w-full max-w-md">
+            <div className="md:col-span-5 lg:col-span-4 xl:col-span-4 sticky top-16 flex justify-center">
+              <div className="w-full max-w-[380px]">
                 <RemoteControl
                   onKeyPress={handleKeyPress}
                   onSendText={handleSendText}
@@ -361,7 +359,7 @@ export default function App() {
             </div>
 
             {/* Right Column: Channels, YouTube TV & Web Apps Workspace */}
-            <div className="md:col-span-6 lg:col-span-7 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-4 shadow-xl">
+            <div className="md:col-span-7 lg:col-span-8 xl:col-span-8 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-4 shadow-xl">
               
               {/* Right Pane Sub-Tabs */}
               <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
