@@ -189,6 +189,20 @@ export default function App() {
     }
   };
 
+  const handlePlayVideo = async (videoId, volumeBoost = true) => {
+    if (!activeDevice) return;
+    try {
+      await axios.post('/api/roku/play-video', {
+        ip: activeDevice.ip,
+        videoId,
+        volumeBoost
+      });
+      setTimeout(() => fetchActiveApp(activeDevice.ip), 1500);
+    } catch (e) {
+      console.error('Failed to play video on Roku:', e);
+    }
+  };
+
   const handleSendText = async (text) => {
     if (!activeDevice) return;
     try {
@@ -437,6 +451,7 @@ export default function App() {
                 <WebLauncherModal
                   bookmarks={bookmarks}
                   onLaunchUrl={handleLaunchUrl}
+                  onPlayVideo={handlePlayVideo}
                   onAddBookmark={handleAddBookmark}
                   onDeleteBookmark={handleDeleteBookmark}
                   disabled={!activeDevice}
@@ -494,6 +509,7 @@ export default function App() {
                 <WebLauncherModal
                   bookmarks={bookmarks}
                   onLaunchUrl={handleLaunchUrl}
+                  onPlayVideo={handlePlayVideo}
                   onAddBookmark={handleAddBookmark}
                   onDeleteBookmark={handleDeleteBookmark}
                   disabled={!activeDevice}

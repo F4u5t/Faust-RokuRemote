@@ -249,6 +249,21 @@ app.post('/api/roku/launch-web', async (req, res) => {
   }
 });
 
+/**
+ * Play a YouTube video or instant prank directly on Roku
+ */
+app.post('/api/roku/play-video', async (req, res) => {
+  const { ip, videoId, volumeBoost } = req.body;
+  if (!ip || !videoId) return res.status(400).json({ success: false, error: 'ip and videoId are required' });
+
+  try {
+    const result = await ecp.playYouTubeVideo(ip, videoId, volumeBoost);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // --- Custom Web App Bookmarks Endpoints ---
 
 app.get('/api/bookmarks', (req, res) => {

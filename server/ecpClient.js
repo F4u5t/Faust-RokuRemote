@@ -362,6 +362,43 @@ class RokuEcpClient {
       this.handleEcpError(err, `tune YouTube TV`);
     }
   }
+
+  /**
+   * Plays any YouTube video directly on standard YouTube (App ID 837)
+   */
+  async playYouTubeVideo(ip, videoInput, volumeBoost = false) {
+    let videoId = (videoInput || '').trim();
+    if (videoId.includes('v=')) {
+      videoId = videoId.split('v=')[1].split('&')[0];
+    } else if (videoId.includes('youtu.be/')) {
+      videoId = videoId.split('youtu.be/')[1].split('?')[0];
+    } else if (videoId.includes('shorts/')) {
+      videoId = videoId.split('shorts/')[1].split('?')[0];
+    }
+
+    if (volumeBoost) {
+      try {
+        // Set volume to 28 so it's clearly audible
+        await this.setVolume(ip, 28);
+      } catch (e) {
+        // ignore volume error
+      }
+    }
+
+    // Launch YouTube App ID 837 with contentID
+    const baseUrl = this.getBaseUrl(ip);
+    const launchUrl = `${baseUrl}/launch/837?contentID=${encodeURIComponent(videoId)}&mediaType=live`;
+
+    try {
+      const response = await axios.post(launchUrl, '', {
+        headers: { 'Content-Length': '0' },
+        timeout: 4000
+      });
+      return { success: true, videoId, status: response.status };
+    } catch (err) {
+      this.handleEcpError(err, `play YouTube video ${videoId}`);
+    }
+  }
 }
 
 module.exports = new RokuEcpClient();

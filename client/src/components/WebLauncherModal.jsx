@@ -11,12 +11,92 @@ import {
   Video,
   MonitorPlay,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Flame,
+  Volume2,
+  Sparkles,
+  Radio
 } from 'lucide-react';
+
+const PRANK_PRESETS = [
+  {
+    id: 'rickroll',
+    title: 'Rick Roll 🕺',
+    subtitle: 'Never Gonna Give You Up',
+    videoId: 'dQw4w9WgXcQ',
+    gradient: 'from-amber-500 to-rose-600',
+    border: 'border-amber-500/40',
+    badge: 'Classic'
+  },
+  {
+    id: 'ghost',
+    title: 'Spooky Screams 👻',
+    subtitle: 'Haunted Ambience',
+    videoId: 'qZwtD2PqA_E',
+    gradient: 'from-purple-600 to-indigo-900',
+    border: 'border-purple-500/40',
+    badge: 'House Sitter'
+  },
+  {
+    id: 'curb',
+    title: 'Curb Theme 🎺',
+    subtitle: 'Awkward Timing',
+    videoId: 'Ag1o3ko3jWA',
+    gradient: 'from-emerald-600 to-teal-800',
+    border: 'border-emerald-500/40',
+    badge: 'Meme'
+  },
+  {
+    id: 'sax',
+    title: 'Epic Sax Guy 🎷',
+    subtitle: 'Endless Grooves',
+    videoId: '8ZcmTl_1ER8',
+    gradient: 'from-pink-500 to-fuchsia-700',
+    border: 'border-pink-500/40',
+    badge: '10 Hours'
+  },
+  {
+    id: 'airhorn',
+    title: 'MLG Airhorn 🚨',
+    subtitle: 'Loud Alert',
+    videoId: '2Z4m4lnjxkY',
+    gradient: 'from-red-600 to-orange-600',
+    border: 'border-red-500/40',
+    badge: 'Loud'
+  },
+  {
+    id: 'cena',
+    title: 'John Cena 💥',
+    subtitle: 'AND HIS NAME IS...',
+    videoId: '-cZ7ndjhhzk',
+    gradient: 'from-blue-600 to-cyan-600',
+    border: 'border-blue-500/40',
+    badge: 'Banger'
+  },
+  {
+    id: 'dramatic',
+    title: 'Dramatic Look 🍿',
+    subtitle: 'Dramatic Chipmunk',
+    videoId: 'a1Y73sPHKxw',
+    gradient: 'from-amber-600 to-yellow-700',
+    border: 'border-amber-500/40',
+    badge: 'Shock'
+  },
+  {
+    id: 'careless',
+    title: 'Careless Whisper 🎷',
+    subtitle: 'Smooth Sax Solo',
+    videoId: 'GaoLU6zKaws',
+    gradient: 'from-rose-600 to-purple-800',
+    border: 'border-rose-500/40',
+    badge: 'Romance'
+  }
+];
 
 export default function WebLauncherModal({
   bookmarks,
   onLaunchUrl,
+  onPlayVideo,
   onAddBookmark,
   onDeleteBookmark,
   disabled
@@ -30,6 +110,35 @@ export default function WebLauncherModal({
   const [newStrategy, setNewStrategy] = useState('dev_channel');
   const [newDescription, setNewDescription] = useState('');
   const [statusMessage, setStatusMessage] = useState(null);
+
+  // Instant Video Launcher state
+  const [customVideoInput, setCustomVideoInput] = useState('');
+  const [boostVolume, setBoostVolume] = useState(true);
+  const [isFiring, setIsFiring] = useState(false);
+
+  const handleFireVideo = async (videoIdOrUrl, label = 'Video') => {
+    if (disabled || !videoIdOrUrl) return;
+    setIsFiring(true);
+    setStatusMessage({ type: 'info', text: `Blasting "${label}" to Roku TV...` });
+    try {
+      if (onPlayVideo) {
+        await onPlayVideo(videoIdOrUrl, boostVolume);
+      }
+      setStatusMessage({ type: 'success', text: `Playing "${label}" on TV!` });
+      setTimeout(() => setStatusMessage(null), 4500);
+    } catch (err) {
+      setStatusMessage({ type: 'error', text: err.message || 'Failed to play video' });
+    } finally {
+      setIsFiring(false);
+    }
+  };
+
+  const handleCustomVideoSubmit = (e) => {
+    e.preventDefault();
+    if (!customVideoInput.trim()) return;
+    handleFireVideo(customVideoInput, 'Custom Video');
+    setCustomVideoInput('');
+  };
 
   const handleDirectLaunch = async (e) => {
     e.preventDefault();
@@ -75,23 +184,94 @@ export default function WebLauncherModal({
   };
 
   return (
-    <div className="w-full space-y-5 py-2">
+    <div className="touch-scroll-panel max-h-[550px] xl:max-h-[575px] overflow-y-auto pr-1 w-full space-y-4">
       
-      {/* Header & Explanation */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-lg">
-        <div className="flex items-start gap-3">
-          <div className="p-2.5 rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30">
-            <Globe className="w-5 h-5" />
+      {/* 🎭 Instant Video & Prank Soundboard Banner */}
+      <div className="bg-gradient-to-r from-purple-950/70 via-slate-900 to-indigo-950/70 border border-purple-500/30 rounded-2xl p-4 shadow-xl">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-purple-600/30 text-purple-300 border border-purple-400/30 shadow-inner">
+              <Flame className="w-5 h-5 text-amber-400 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-slate-100">Instant Video & Prank Soundboard 🎭</h2>
+                <span className="px-2 py-0.5 rounded-full bg-red-600/30 text-red-300 border border-red-500/40 text-[10px] font-bold">1-Click Blast</span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Instantly wake your TV and auto-play any YouTube video (Rick Roll, jump scares, memes, or custom URLs).
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-              Roku Web Browser & App Launcher
-            </h2>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-              Launch your custom web apps, Home Assistant dashboards, or web pages directly onto your Roku TV screen.
-            </p>
-          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer bg-slate-950/70 px-3 py-1.5 rounded-xl border border-slate-700/60 text-xs text-slate-300 hover:text-white transition-colors">
+            <input
+              type="checkbox"
+              checked={boostVolume}
+              onChange={(e) => setBoostVolume(e.target.checked)}
+              className="accent-purple-500 w-3.5 h-3.5 rounded"
+            />
+            <Volume2 className="w-3.5 h-3.5 text-purple-400" />
+            <span className="text-[11px] font-medium">Auto-Boost Volume (28)</span>
+          </label>
         </div>
+
+        {/* Status Notification */}
+        {statusMessage && (
+          <div className={`p-2.5 mb-3 rounded-xl text-xs flex items-center gap-2 ${
+            statusMessage.type === 'success' ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/40' :
+            statusMessage.type === 'error' ? 'bg-red-950/60 text-red-300 border border-red-500/40' :
+            'bg-purple-950/60 text-purple-300 border border-purple-500/40'
+          }`}>
+            {statusMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <AlertTriangle className="w-4 h-4" />}
+            <span className="truncate">{statusMessage.text}</span>
+          </div>
+        )}
+
+        {/* 1-Click Prank Preset Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-2.5">
+          {PRANK_PRESETS.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => handleFireVideo(p.videoId, p.title)}
+              disabled={disabled || isFiring}
+              className={`group relative overflow-hidden text-left p-3 rounded-xl bg-slate-950/80 hover:bg-slate-900 border ${p.border} hover:border-purple-400/60 transition-all duration-200 shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-50`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-slate-200">
+                  {p.badge}
+                </span>
+                <PlayCircle className="w-4 h-4 text-slate-400 group-hover:text-amber-400 transition-colors" />
+              </div>
+              <div className="font-bold text-xs text-slate-100 group-hover:text-amber-300 truncate transition-colors">
+                {p.title}
+              </div>
+              <div className="text-[10px] text-slate-400 truncate">
+                {p.subtitle}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Custom YouTube URL or ID Launcher */}
+        <form onSubmit={handleCustomVideoSubmit} className="mt-3 flex gap-2">
+          <input
+            type="text"
+            value={customVideoInput}
+            onChange={(e) => setCustomVideoInput(e.target.value)}
+            placeholder="Paste any YouTube URL or Video ID (e.g. https://youtu.be/dQw4w9WgXcQ)"
+            disabled={disabled || isFiring}
+            className="flex-1 bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+          />
+          <button
+            type="submit"
+            disabled={!customVideoInput.trim() || disabled || isFiring}
+            className="px-4 py-2 bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-500 hover:to-purple-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-purple-900/30 transition-all disabled:opacity-40"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Blast on TV</span>
+          </button>
+        </form>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -152,18 +332,6 @@ export default function WebLauncherModal({
               <span>Launch on Roku TV</span>
             </button>
           </form>
-
-          {/* Status Notification */}
-          {statusMessage && (
-            <div className={`p-2.5 rounded-xl text-xs flex items-center gap-2 ${
-              statusMessage.type === 'success' ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30' :
-              statusMessage.type === 'error' ? 'bg-red-950/40 text-red-300 border border-red-500/30' :
-              'bg-purple-950/40 text-purple-300 border border-purple-500/30'
-            }`}>
-              {statusMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <AlertTriangle className="w-4 h-4" />}
-              <span className="truncate">{statusMessage.text}</span>
-            </div>
-          )}
 
           {/* Information Box on Roku Web Strategies */}
           <div className="bg-slate-950/50 border border-slate-800/80 rounded-2xl p-3 text-xs text-slate-400 space-y-1.5 mt-3">
