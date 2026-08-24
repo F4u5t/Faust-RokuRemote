@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Power,
   Volume2,
@@ -17,15 +17,28 @@ import {
   FastForward,
   Rewind,
   Tv2,
-  Search
+  Search,
+  Sliders
 } from 'lucide-react';
 import KeyboardInput from './KeyboardInput';
 
 export default function RemoteControl({
   onKeyPress,
   onSendText,
+  audioState = { volume: 15, muted: false },
+  onSetVolume,
   disabled
 }) {
+  const [localVol, setLocalVol] = useState(audioState?.volume ?? 15);
+  const [isSliding, setIsSliding] = useState(false);
+
+  // Sync external volume updates when not actively dragging
+  useEffect(() => {
+    if (!isSliding && audioState?.volume !== undefined && audioState.volume !== null) {
+      setLocalVol(audioState.volume);
+    }
+  }, [audioState?.volume, isSliding]);
+
   const triggerHaptic = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
@@ -42,13 +55,28 @@ export default function RemoteControl({
     onKeyPress(keyName);
   };
 
+  const handleSliderChange = (e) => {
+    const val = Number(e.target.value);
+    setLocalVol(val);
+  };
+
+  const handleSliderCommit = () => {
+    setIsSliding(false);
+    triggerHaptic();
+    if (onSetVolume && !disabled) {
+      onSetVolume(localVol);
+    }
+  };
+
+  const isMuted = audioState?.muted;
+
   return (
-    <div className="w-full max-w-sm mx-auto flex flex-col items-center gap-4 py-2">
+    <div className="w-full flex flex-col items-center gap-4 py-1">
       
-      {/* Top TV Power, Audio & Input Controls */}
+      {/* Top TV Power, Inputs & Global Actions */}
       <div className="w-full bg-slate-900/70 backdrop-blur border border-slate-800 rounded-2xl p-3 shadow-lg">
         <div className="flex items-center justify-between gap-2">
-          {/* Power */}
+          {/* Power Button */}
           <button
             onClick={() => handleKey('Power')}
             disabled={disabled}
@@ -58,191 +86,239 @@ export default function RemoteControl({
             <span>Power</span>
           </button>
 
-          {/* Mute */}
-          <button
-            onClick={() => handleKey('VolumeMute')}
-            disabled={disabled}
-            className="remote-btn p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700/50 text-slate-300 flex items-center justify-center"
-            title="Mute Audio"
-          >
-            <VolumeX className="w-4 h-4 text-amber-400" />
-          </button>
-
-          {/* Volume Down */}
-          <button
-            onClick={() => handleKey('VolumeDown')}
-            disabled={disabled}
-            className="remote-btn px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700/50 text-slate-200 flex items-center justify-center gap-1 text-xs font-medium"
-            title="Volume Down"
-          >
-            <Volume1 className="w-4 h-4" />
-            <span>Vol -</span>
-          </button>
-
-          {/* Volume Up */}
-          <button
-            onClick={() => handleKey('VolumeUp')}
-            disabled={disabled}
-            className="remote-btn px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700/50 text-slate-200 flex items-center justify-center gap-1 text-xs font-medium"
-            title="Volume Up"
-          >
-            <Volume2 className="w-4 h-4 text-blue-400" />
-            <span>Vol +</span>
-          </button>
-        </div>
-
-        {/* HDMI / Inputs Quick Bar */}
-        <div className="flex items-center gap-1.5 mt-2.5 pt-2.5 border-t border-slate-800/80">
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-1">Input:</span>
-          {['InputTuner', 'InputHDMI1', 'InputHDMI2', 'InputHDMI3', 'InputHDMI4'].map((inputKey, idx) => {
-            const labels = ['TV', 'HDMI 1', 'HDMI 2', 'HDMI 3', 'HDMI 4'];
-            return (
-              <button
-                key={inputKey}
-                onClick={() => handleKey(inputKey)}
-                disabled={disabled}
-                className="remote-btn flex-1 py-1 rounded-lg bg-slate-800/60 hover:bg-slate-700/70 border border-slate-700/30 text-[11px] font-medium text-slate-400 hover:text-slate-200"
-              >
-                {labels[idx]}
-              </button>
-            );
-          })}
+          {/* Quick HDMI & Inputs */}
+          <div className="flex-1 flex items-center gap-1">
+            {['InputTuner', 'InputHDMI1', 'InputHDMI2', 'InputHDMI3'].map((inputKey, idx) => {
+              const labels = ['TV', 'HDMI 1', 'HDMI 2', 'HDMI 3'];
+              return (
+                <button
+                  key={inputKey}
+                  onClick={() => handleKey(inputKey)}
+                  disabled={disabled}
+                  className="remote-btn flex-1 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-700/70 border border-slate-700/30 text-[11px] font-medium text-slate-400 hover:text-slate-200"
+                >
+                  {labels[idx]}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Main D-Pad & Navigation Hub */}
-      <div className="w-full bg-slate-900/80 backdrop-blur border border-slate-800/90 rounded-3xl p-5 shadow-2xl relative">
+      {/* Main Remote Area: Tactile D-Pad Center + Vertical Volume Panel Beside It */}
+      <div className="w-full flex items-stretch justify-center gap-3">
         
-        {/* Navigation Bar: Back, Home, Options (*) */}
-        <div className="flex items-center justify-between mb-5 px-2">
-          {/* Back */}
-          <button
-            onClick={() => handleKey('Back')}
-            disabled={disabled}
-            className="remote-btn w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700/60 text-slate-300 flex flex-col items-center justify-center gap-0.5 shadow-md"
-            title="Back"
-          >
-            <ArrowLeft className="w-5 h-5 text-slate-300" />
-            <span className="text-[9px] font-bold text-slate-400">BACK</span>
-          </button>
-
-          {/* Instant Replay */}
-          <button
-            onClick={() => handleKey('InstantReplay')}
-            disabled={disabled}
-            className="remote-btn w-10 h-10 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/50 text-slate-400 flex items-center justify-center"
-            title="Instant Replay (7 sec)"
-          >
-            <RotateCcw className="w-4 h-4 text-slate-300" />
-          </button>
-
-          {/* Home */}
-          <button
-            onClick={() => handleKey('Home')}
-            disabled={disabled}
-            className="remote-btn w-14 h-12 rounded-2xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/50 text-purple-300 flex flex-col items-center justify-center gap-0.5 shadow-lg shadow-purple-900/20"
-            title="Home Screen"
-          >
-            <Home className="w-5 h-5 text-purple-300" />
-            <span className="text-[9px] font-bold tracking-wider">HOME</span>
-          </button>
-
-          {/* Options / Asterisk */}
-          <button
-            onClick={() => handleKey('Info')}
-            disabled={disabled}
-            className="remote-btn w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700/60 text-slate-300 flex flex-col items-center justify-center gap-0.5 shadow-md"
-            title="Options (*)"
-          >
-            <Asterisk className="w-5 h-5 text-amber-400" />
-            <span className="text-[9px] font-bold text-slate-400">INFO</span>
-          </button>
-        </div>
-
-        {/* Tactile Circular D-Pad */}
-        <div className="relative w-64 h-64 mx-auto my-2 rounded-full bg-gradient-to-b from-slate-800/90 to-slate-900/90 border-2 border-slate-700/70 p-3 shadow-inner flex items-center justify-center">
+        {/* Left / Main Column: D-Pad & Navigation Hub */}
+        <div className="flex-1 bg-slate-900/80 backdrop-blur border border-slate-800/90 rounded-3xl p-4 shadow-2xl relative">
           
-          {/* UP Button */}
-          <button
-            onClick={() => handleKey('Up')}
-            disabled={disabled}
-            className="remote-btn absolute top-2 w-16 h-14 rounded-t-2xl bg-slate-700/60 hover:bg-slate-600/70 text-slate-200 flex items-center justify-center pt-1"
-            title="Up"
-          >
-            <ChevronUp className="w-8 h-8 text-slate-300 drop-shadow" />
-          </button>
+          {/* Navigation Bar: Back, Instant Replay, Home, Info (*) */}
+          <div className="flex items-center justify-between mb-4 px-1">
+            {/* Back */}
+            <button
+              onClick={() => handleKey('Back')}
+              disabled={disabled}
+              className="remote-btn w-11 h-11 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700/60 text-slate-300 flex flex-col items-center justify-center gap-0.5 shadow-md"
+              title="Back"
+            >
+              <ArrowLeft className="w-4 h-4 text-slate-300" />
+              <span className="text-[8px] font-bold text-slate-400">BACK</span>
+            </button>
 
-          {/* DOWN Button */}
-          <button
-            onClick={() => handleKey('Down')}
-            disabled={disabled}
-            className="remote-btn absolute bottom-2 w-16 h-14 rounded-b-2xl bg-slate-700/60 hover:bg-slate-600/70 text-slate-200 flex items-center justify-center pb-1"
-            title="Down"
-          >
-            <ChevronDown className="w-8 h-8 text-slate-300 drop-shadow" />
-          </button>
+            {/* Instant Replay */}
+            <button
+              onClick={() => handleKey('InstantReplay')}
+              disabled={disabled}
+              className="remote-btn w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/50 text-slate-400 flex items-center justify-center"
+              title="Instant Replay (7 sec)"
+            >
+              <RotateCcw className="w-4 h-4 text-slate-300" />
+            </button>
 
-          {/* LEFT Button */}
-          <button
-            onClick={() => handleKey('Left')}
-            disabled={disabled}
-            className="remote-btn absolute left-2 h-16 w-14 rounded-l-2xl bg-slate-700/60 hover:bg-slate-600/70 text-slate-200 flex items-center justify-center pl-1"
-            title="Left"
-          >
-            <ChevronLeft className="w-8 h-8 text-slate-300 drop-shadow" />
-          </button>
+            {/* Home */}
+            <button
+              onClick={() => handleKey('Home')}
+              disabled={disabled}
+              className="remote-btn w-14 h-11 rounded-2xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/50 text-purple-300 flex flex-col items-center justify-center gap-0.5 shadow-lg shadow-purple-900/20"
+              title="Home Screen"
+            >
+              <Home className="w-4 h-4 text-purple-300" />
+              <span className="text-[8px] font-bold tracking-wider">HOME</span>
+            </button>
 
-          {/* RIGHT Button */}
-          <button
-            onClick={() => handleKey('Right')}
-            disabled={disabled}
-            className="remote-btn absolute right-2 h-16 w-14 rounded-r-2xl bg-slate-700/60 hover:bg-slate-600/70 text-slate-200 flex items-center justify-center pr-1"
-            title="Right"
-          >
-            <ChevronRight className="w-8 h-8 text-slate-300 drop-shadow" />
-          </button>
+            {/* Options / Info */}
+            <button
+              onClick={() => handleKey('Info')}
+              disabled={disabled}
+              className="remote-btn w-11 h-11 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700/60 text-slate-300 flex flex-col items-center justify-center gap-0.5 shadow-md"
+              title="Options (*)"
+            >
+              <Asterisk className="w-4 h-4 text-amber-400" />
+              <span className="text-[8px] font-bold text-slate-400">INFO</span>
+            </button>
+          </div>
 
-          {/* CENTER OK BUTTON */}
-          <button
-            onClick={() => handleKey('Select')}
-            disabled={disabled}
-            className="remote-btn w-20 h-20 rounded-full bg-gradient-to-tr from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white font-black text-lg shadow-xl shadow-purple-900/50 flex items-center justify-center border border-purple-400/40 z-10 active:scale-95 transition-transform"
-            title="OK / Select"
-          >
-            OK
-          </button>
+          {/* Tactile Circular D-Pad */}
+          <div className="relative w-56 h-56 mx-auto my-1 rounded-full bg-gradient-to-b from-slate-800/90 to-slate-900/90 border-2 border-slate-700/70 p-3 shadow-inner flex items-center justify-center">
+            
+            {/* UP Button */}
+            <button
+              onClick={() => handleKey('Up')}
+              disabled={disabled}
+              className="remote-btn absolute top-1.5 w-14 h-12 rounded-t-2xl bg-slate-700/60 hover:bg-slate-600/70 text-slate-200 flex items-center justify-center pt-1"
+              title="Up"
+            >
+              <ChevronUp className="w-7 h-7 text-slate-300 drop-shadow" />
+            </button>
+
+            {/* DOWN Button */}
+            <button
+              onClick={() => handleKey('Down')}
+              disabled={disabled}
+              className="remote-btn absolute bottom-1.5 w-14 h-12 rounded-b-2xl bg-slate-700/60 hover:bg-slate-600/70 text-slate-200 flex items-center justify-center pb-1"
+              title="Down"
+            >
+              <ChevronDown className="w-7 h-7 text-slate-300 drop-shadow" />
+            </button>
+
+            {/* LEFT Button */}
+            <button
+              onClick={() => handleKey('Left')}
+              disabled={disabled}
+              className="remote-btn absolute left-1.5 h-14 w-12 rounded-l-2xl bg-slate-700/60 hover:bg-slate-600/70 text-slate-200 flex items-center justify-center pl-1"
+              title="Left"
+            >
+              <ChevronLeft className="w-7 h-7 text-slate-300 drop-shadow" />
+            </button>
+
+            {/* RIGHT Button */}
+            <button
+              onClick={() => handleKey('Right')}
+              disabled={disabled}
+              className="remote-btn absolute right-1.5 h-14 w-12 rounded-r-2xl bg-slate-700/60 hover:bg-slate-600/70 text-slate-200 flex items-center justify-center pr-1"
+              title="Right"
+            >
+              <ChevronRight className="w-7 h-7 text-slate-300 drop-shadow" />
+            </button>
+
+            {/* CENTER OK BUTTON */}
+            <button
+              onClick={() => handleKey('Select')}
+              disabled={disabled}
+              className="remote-btn w-16 h-16 rounded-full bg-gradient-to-tr from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white font-black text-base shadow-xl shadow-purple-900/50 flex items-center justify-center border border-purple-400/40 z-10 active:scale-95 transition-transform"
+              title="OK / Select"
+            >
+              OK
+            </button>
+          </div>
+
+          {/* Media Transport Controls: Rewind, Play/Pause, Fast-Forward */}
+          <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-slate-800/80">
+            <button
+              onClick={() => handleKey('Rev')}
+              disabled={disabled}
+              className="remote-btn w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-slate-300 flex items-center justify-center shadow-md"
+              title="Rewind"
+            >
+              <Rewind className="w-4 h-4 text-slate-300" />
+            </button>
+
+            <button
+              onClick={() => handleKey('Play')}
+              disabled={disabled}
+              className="remote-btn px-5 h-10 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold flex items-center justify-center gap-1.5 shadow-lg shadow-purple-600/30"
+              title="Play / Pause"
+            >
+              <Play className="w-3.5 h-3.5 fill-white" />
+              <Pause className="w-3.5 h-3.5 fill-white" />
+            </button>
+
+            <button
+              onClick={() => handleKey('Fwd')}
+              disabled={disabled}
+              className="remote-btn w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-slate-300 flex items-center justify-center shadow-md"
+              title="Fast Forward"
+            >
+              <FastForward className="w-4 h-4 text-slate-300" />
+            </button>
+          </div>
         </div>
 
-        {/* Media Transport Controls: Rewind, Play/Pause, Fast-Forward */}
-        <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-slate-800/80">
+        {/* Right Column: Dedicated Vertical Volume Slider & Large Mute Strip */}
+        <div className="w-20 sm:w-24 bg-slate-900/90 border border-slate-800/90 rounded-3xl p-2.5 flex flex-col items-center justify-between shadow-2xl">
+          
+          {/* Live Volume Number Badge */}
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Vol</span>
+            <div className={`mt-0.5 px-2 py-1 rounded-xl text-xs font-black border transition-all ${
+              isMuted
+                ? 'bg-red-950/60 border-red-500/50 text-red-400'
+                : 'bg-purple-950/60 border-purple-500/40 text-purple-300'
+            }`}>
+              {isMuted ? 'MUTE' : (localVol ?? '--')}
+            </div>
+          </div>
+
+          {/* Volume + (Up) Button */}
           <button
-            onClick={() => handleKey('Rev')}
+            onClick={() => handleKey('VolumeUp')}
             disabled={disabled}
-            className="remote-btn w-12 h-11 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-slate-300 flex items-center justify-center shadow-md"
-            title="Rewind"
+            className="remote-btn w-12 h-10 mt-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 flex items-center justify-center text-sm font-bold shadow-md active:scale-95 transition-transform"
+            title="Volume Up (+)"
           >
-            <Rewind className="w-5 h-5 text-slate-300" />
+            <ChevronUp className="w-5 h-5 text-purple-300" />
           </button>
 
+          {/* Vertical Slider Bar Track */}
+          <div className="relative flex-1 my-3 flex items-center justify-center py-2">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={localVol}
+              onChange={handleSliderChange}
+              onMouseDown={() => setIsSliding(true)}
+              onTouchStart={() => setIsSliding(true)}
+              onMouseUp={handleSliderCommit}
+              onTouchEnd={handleSliderCommit}
+              disabled={disabled}
+              className="h-36 sm:h-44 w-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500 focus:outline-none [writing-mode:bt-lr] [-webkit-appearance:slider-vertical]"
+              style={{
+                writingMode: 'vertical-lr',
+                direction: 'rtl'
+              }}
+              title={`Volume: ${localVol}`}
+            />
+          </div>
+
+          {/* Volume - (Down) Button */}
           <button
-            onClick={() => handleKey('Play')}
+            onClick={() => handleKey('VolumeDown')}
             disabled={disabled}
-            className="remote-btn px-6 h-12 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30"
-            title="Play / Pause"
+            className="remote-btn w-12 h-10 mb-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 flex items-center justify-center text-sm font-bold shadow-md active:scale-95 transition-transform"
+            title="Volume Down (-)"
           >
-            <Play className="w-4 h-4 fill-white" />
-            <Pause className="w-4 h-4 fill-white" />
+            <ChevronDown className="w-5 h-5 text-purple-300" />
           </button>
 
+          {/* Giant Tactile Mute Button */}
           <button
-            onClick={() => handleKey('Fwd')}
+            onClick={() => handleKey('VolumeMute')}
             disabled={disabled}
-            className="remote-btn w-12 h-11 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-slate-300 flex items-center justify-center shadow-md"
-            title="Fast Forward"
+            className={`remote-btn w-full py-3 rounded-2xl flex flex-col items-center justify-center gap-1 border shadow-lg transition-all active:scale-95 ${
+              isMuted
+                ? 'bg-red-600 hover:bg-red-500 border-red-400 text-white shadow-red-600/40 animate-pulse'
+                : 'bg-slate-800/90 hover:bg-slate-700 border-slate-700 text-amber-400 hover:text-amber-300'
+            }`}
+            title={isMuted ? 'Unmute TV' : 'Mute TV'}
           >
-            <FastForward className="w-5 h-5 text-slate-300" />
+            {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            <span className="text-[9px] font-black uppercase tracking-wider">
+              {isMuted ? 'MUTED' : 'MUTE'}
+            </span>
           </button>
+
         </div>
+
       </div>
 
       {/* Virtual Keyboard Accordion */}

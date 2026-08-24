@@ -25,6 +25,9 @@ export default function App() {
   const [isLoadingApps, setIsLoadingApps] = useState(false);
   const [bookmarks, setBookmarks] = useState([]);
 
+  // Audio / Live Volume State
+  const [audioState, setAudioState] = useState({ volume: 15, muted: false });
+
   // Load saved device & bookmarks on mount
   useEffect(() => {
     const savedIp = localStorage.getItem('faust_selected_roku_ip');
@@ -45,22 +48,24 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // When active device changes, refresh its installed apps & active app
+  // When active device changes, refresh its installed apps, active app & audio state
   useEffect(() => {
     if (activeDevice && activeDevice.ip) {
       localStorage.setItem('faust_selected_roku_ip', activeDevice.ip);
       localStorage.setItem('faust_selected_roku_name', activeDevice.name || '');
       fetchApps(activeDevice.ip);
       fetchActiveApp(activeDevice.ip);
+      fetchAudioState(activeDevice.ip);
     }
   }, [activeDevice]);
 
-  // Periodic active app polling
+  // Periodic polling for active app and audio status
   useEffect(() => {
     if (!activeDevice || !activeDevice.ip) return;
     const interval = setInterval(() => {
       fetchActiveApp(activeDevice.ip);
-    }, 6000);
+      fetchAudioState(activeDevice.ip);
+    }, 4000);
     return () => clearInterval(interval);
   }, [activeDevice]);
 
@@ -120,12 +125,61 @@ export default function App() {
     }
   };
 
+  const fetchAudioState = async (ip) => {
+    try {
+      const res = await axios.get(`/api/roku/audio-device?ip=${encodeURIComponent(ip)}`);
+      if (res.data && res.data.success && res.data.volume !== null) {
+        setAudioState({
+          volume: res.data.volume,
+          muted: res.data.muted,
+          destinations: res.data.destinations
+        });
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
+
   const handleKeyPress = async (key) => {
     if (!activeDevice) return;
+    
+    // Optimistic volume state update
+    if (key === 'VolumeUp') {
+      setAudioState(prev => ({ ...prev, volume: Math.min((prev?.volume ?? 15) + 1, 100), muted: false }));
+    } else if (key === 'VolumeDown') {
+      setAudioState(prev => ({ ...prev, volume: Math.max((prev?.volume ?? 15) - 1, 0), muted: false }));
+    } else if (key === 'VolumeMute') {
+      setAudioState(prev => ({ ...prev, muted: !prev.muted }));
+    }
+
     try {
       await axios.post('/api/roku/keypress', { ip: activeDevice.ip, key });
+      // Refresh real audio level right after
+      if (key.startsWith('Volume')) {
+        setTimeout(() => fetchAudioState(activeDevice.ip), 300);
+      }
     } catch (e) {
       console.error(`Failed to send key ${key}:`, e);
+    }
+  };
+
+  const handleSetVolume = async (newVol) => {
+    if (!activeDevice) return;
+    setAudioState(prev => ({ ...prev, volume: newVol, muted: false }));
+    try {
+      const res = await axios.post('/api/roku/volume', {
+        ip: activeDevice.ip,
+        volume: newVol
+      });
+      if (res.data && res.data.success) {
+        setAudioState({
+          volume: res.data.volume,
+          muted: res.data.muted,
+          destinations: res.data.destinations
+        });
+      }
+    } catch (e) {
+      console.error('Failed to set volume:', e);
     }
   };
 
@@ -226,19 +280,21 @@ export default function App() {
         {activeTab === 'split' ? (
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             
-            {/* Left Column: Tactile Remote Control */}
-            <div className="md:col-span-5 lg:col-span-4 sticky top-20 flex justify-center">
-              <div className="w-full max-w-sm">
+            {/* Left Column: Tactile Remote Control with Vertical Volume Panel */}
+            <div className="md:col-span-6 lg:col-span-5 sticky top-20 flex justify-center">
+              <div className="w-full max-w-md">
                 <RemoteControl
                   onKeyPress={handleKeyPress}
                   onSendText={handleSendText}
+                  audioState={audioState}
+                  onSetVolume={handleSetVolume}
                   disabled={!activeDevice}
                 />
               </div>
             </div>
 
             {/* Right Column: Channels & Web Apps Dashboard Workspace */}
-            <div className="md:col-span-7 lg:col-span-8 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-4 shadow-xl">
+            <div className="md:col-span-6 lg:col-span-7 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-4 shadow-xl">
               
               {/* Right Pane Sub-Tabs */}
               <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
@@ -304,6 +360,8 @@ export default function App() {
                 <RemoteControl
                   onKeyPress={handleKeyPress}
                   onSendText={handleSendText}
+                  audioState={audioState}
+                  onSetVolume={handleSetVolume}
                   disabled={!activeDevice}
                 />
               </div>

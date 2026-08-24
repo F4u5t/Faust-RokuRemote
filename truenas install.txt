@@ -1,0 +1,15 @@
+Method 1: Using TrueNAS SCALE Web GUI (Custom App)
+For TrueNAS SCALE 24.10+ (Electric Eel - Native Docker Compose):
+In the TrueNAS Web UI, go to Apps → Click Discover Apps → Custom App (or Install Custom App).
+Set:
+
+Application Name: faust-rokuremote
+
+Under Docker Compose Configuration, choose Repository (or paste compose):
+
+Git Repository: https://github.com/F4u5t/Faust-RokuRemote.git
+Branch: main
+
+
+Check Host Network (or map Host Port 4000 → Container Port 4000).
+Click Install. TrueNAS will build and run the container automatically.

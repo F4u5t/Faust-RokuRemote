@@ -182,6 +182,53 @@ class RokuEcpClient {
   }
 
   /**
+   * Queries audio device status including live volume and mute (GET /query/audio-device)
+   */
+  async getAudioDevice(ip) {
+    const baseUrl = this.getBaseUrl(ip);
+    const url = `${baseUrl}/query/audio-device`;
+    try {
+      const response = await axios.get(url, { timeout: 3000 });
+      const parsed = parser.parse(response.data);
+      const audio = parsed['audio-device'] || {};
+      const global = audio.global || {};
+      const isMuted = global.muted === 'true' || global.muted === true;
+      const volume = typeof global.volume === 'number' ? global.volume : parseInt(global.volume || '0', 10);
+
+      return {
+        success: true,
+        volume: isNaN(volume) ? 0 : volume,
+        muted: isMuted,
+        destinations: global['destination-list'] || 'speakers'
+      };
+    } catch (err) {
+      return { success: false, error: err.message, volume: null, muted: null };
+    }
+  }
+
+  /**
+   * Adjusts volume to target level by computing delta and sending VolumeUp / VolumeDown keypresses
+   */
+  async setVolume(ip, targetVolume) {
+    const current = await this.getAudioDevice(ip);
+    if (!current.success || current.volume === null) {
+      throw new Error('Unable to read current TV volume');
+    }
+    const currentVol = current.volume;
+    const diff = Math.round(targetVolume) - currentVol;
+    if (diff === 0) return current;
+
+    const key = diff > 0 ? 'VolumeUp' : 'VolumeDown';
+    const count = Math.min(Math.abs(diff), 30); // cap batch
+
+    for (let i = 0; i < count; i++) {
+      await this.keypress(ip, key);
+      await new Promise(r => setTimeout(r, 45));
+    }
+    return await this.getAudioDevice(ip);
+  }
+
+  /**
    * Fetches the app icon from Roku and returns binary buffer and content-type
    */
   async getAppIcon(ip, appId) {

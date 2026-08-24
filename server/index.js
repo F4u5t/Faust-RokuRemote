@@ -173,6 +173,36 @@ app.get('/api/roku/device-info', async (req, res) => {
 });
 
 /**
+ * Get live audio and volume status
+ */
+app.get('/api/roku/audio-device', async (req, res) => {
+  const { ip } = req.query;
+  if (!ip) return res.status(400).json({ success: false, error: 'ip query param is required' });
+
+  try {
+    const audio = await ecp.getAudioDevice(ip);
+    res.json(audio);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Set target volume level (delta stepped)
+ */
+app.post('/api/roku/volume', async (req, res) => {
+  const { ip, volume } = req.body;
+  if (!ip || volume === undefined) return res.status(400).json({ success: false, error: 'ip and volume are required' });
+
+  try {
+    const result = await ecp.setVolume(ip, Number(volume));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * Proxy app icon
  */
 app.get('/api/roku/icon', async (req, res) => {
