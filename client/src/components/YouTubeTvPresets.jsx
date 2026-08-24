@@ -10,7 +10,12 @@ import {
   Layers,
   Check,
   X,
-  Play
+  Play,
+  Cast,
+  Link2,
+  HelpCircle,
+  Radio,
+  Share2
 } from 'lucide-react';
 
 export default function YouTubeTvPresets({
@@ -23,6 +28,7 @@ export default function YouTubeTvPresets({
   disabled
 }) {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showPairingModal, setShowPairingModal] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
   const [customTitle, setCustomTitle] = useState('');
   const [customSlug, setCustomSlug] = useState('');
@@ -87,6 +93,23 @@ export default function YouTubeTvPresets({
     setShowAddModal(false);
   };
 
+  /**
+   * Opens direct YouTube TV live stream link on tablet
+   * Which automatically casts to paired Roku TV
+   */
+  const handleDirectCastLink = (preset) => {
+    const slug = (preset.slug || '').trim();
+    let targetUrl;
+
+    if (slug.startsWith('http')) {
+      targetUrl = slug;
+    } else {
+      targetUrl = `https://tv.youtube.com/live/${encodeURIComponent(slug)}`;
+    }
+
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+  };
+
   const filteredLibrary = library.filter(item => {
     const q = filterQuery.toLowerCase();
     return item.title.toLowerCase().includes(q) || item.category.toLowerCase().includes(q) || item.slug.toLowerCase().includes(q);
@@ -105,19 +128,37 @@ export default function YouTubeTvPresets({
           </div>
           <div>
             <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-              <span>YouTube TV Channel Presets</span>
+              <span>YouTube TV Channels & Cast</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-950/80 text-red-400 border border-red-800/60 font-semibold">
-                1-Tap Tuning
+                Tablet & TV Link
               </span>
             </h2>
             <p className="text-xs text-slate-400">
-              Instant deep-link shortcuts for live TV networks on your 10" tablet.
+              1-Tap channel shortcuts paired directly to your Roku TV.
             </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setShowPairingModal(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all shadow-sm"
+            title="Link tablet to Roku TV"
+          >
+            <Link2 className="w-3.5 h-3.5 text-red-400" />
+            <span>Pair with TV</span>
+          </button>
+
+          <button
+            onClick={() => window.open('https://tv.youtube.com/live', '_blank')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all shadow-sm"
+            title="Open full YouTube TV Live Guide"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            <span className="hidden sm:inline">Live Guide</span>
+          </button>
+
           <button
             onClick={() => setShowAddModal(true)}
             disabled={disabled}
@@ -127,6 +168,22 @@ export default function YouTubeTvPresets({
             <span>Add Channels</span>
           </button>
         </div>
+      </div>
+
+      {/* Pairing Info Banner */}
+      <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-3 flex items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2.5 text-slate-300">
+          <Cast className="w-4 h-4 text-red-400 shrink-0" />
+          <span>
+            <strong>Pro-Tip:</strong> Pair your Galaxy Tab once via <strong>Link with TV Code</strong>, then tap <strong>"Cast / Watch"</strong> on any channel below to stream instantly to the TV!
+          </span>
+        </div>
+        <button
+          onClick={() => setShowPairingModal(true)}
+          className="text-red-400 hover:text-red-300 font-bold underline shrink-0 cursor-pointer"
+        >
+          Setup Guide
+        </button>
       </div>
 
       {/* Trash Drop Zone (shown when dragging) */}
@@ -176,8 +233,7 @@ export default function YouTubeTvPresets({
                 onDragStart={(e) => handleDragStart(e, preset.id)}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDropOnItem(e, preset.id)}
-                className="group relative bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-red-500/50 rounded-2xl p-3 shadow-lg transition-all duration-200 hover:scale-[1.02] flex flex-col justify-between overflow-hidden cursor-pointer"
-                onClick={() => onTunePreset(preset)}
+                className="group relative bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-red-500/50 rounded-2xl p-3 shadow-lg transition-all duration-200 hover:scale-[1.02] flex flex-col justify-between overflow-hidden"
               >
                 {/* Visual Gradient Background Accent */}
                 <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${preset.color || 'from-red-600 to-red-800'}`} />
@@ -190,14 +246,16 @@ export default function YouTubeTvPresets({
                   <div
                     className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-slate-300 transition-opacity cursor-grab active:cursor-grabbing"
                     title="Drag to reorder"
-                    onClick={(e) => e.stopPropagation()}
                   >
                     <GripVertical className="w-3.5 h-3.5" />
                   </div>
                 </div>
 
                 {/* Center Badge / Channel Name */}
-                <div className="my-2 flex flex-col items-center justify-center text-center">
+                <div
+                  className="my-2 flex flex-col items-center justify-center text-center cursor-pointer"
+                  onClick={() => handleDirectCastLink(preset)}
+                >
                   <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${preset.color || 'from-red-600 to-red-900'} text-white font-black text-sm flex items-center justify-center shadow-md mb-2 border border-white/10 group-hover:shadow-red-900/40`}>
                     {preset.title.slice(0, 4)}
                   </div>
@@ -209,27 +267,30 @@ export default function YouTubeTvPresets({
                   </span>
                 </div>
 
-                {/* Bottom Action: Tune Button & Quick Delete */}
-                <div className="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between gap-1">
+                {/* Bottom Action: Cast Button & Launch on TV */}
+                <div className="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between gap-1.5">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTunePreset(preset);
-                    }}
-                    disabled={disabled}
+                    onClick={() => handleDirectCastLink(preset)}
                     className="flex-1 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30 text-[11px] font-bold flex items-center justify-center gap-1 transition-all"
+                    title="Open stream & Cast to Roku TV"
                   >
-                    <Play className="w-3 h-3 fill-current" />
-                    <span>Tune</span>
+                    <Cast className="w-3 h-3" />
+                    <span>Cast</span>
                   </button>
 
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeletePreset(preset.id);
-                    }}
+                    onClick={() => onTunePreset(preset)}
                     disabled={disabled}
-                    className="p-1.5 rounded-xl text-slate-500 hover:text-red-400 hover:bg-slate-800/80 transition-colors"
+                    className="p-1.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+                    title="Launch YouTube TV app on TV"
+                  >
+                    <Tv className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={() => onDeletePreset(preset.id)}
+                    disabled={disabled}
+                    className="p-1.5 rounded-xl text-slate-500 hover:text-red-400 hover:bg-slate-800 transition-colors"
                     title="Remove Preset"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -239,6 +300,69 @@ export default function YouTubeTvPresets({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* 2-Step Pairing Assistant Modal */}
+      {showPairingModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 text-slate-100 font-bold text-base">
+                <Link2 className="w-5 h-5 text-red-400" />
+                <span>Pair Galaxy Tab to Roku TV</span>
+              </div>
+              <button
+                onClick={() => setShowPairingModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-200 rounded-xl hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs text-slate-300 leading-relaxed">
+              <div className="p-3 bg-red-950/30 border border-red-800/40 rounded-2xl">
+                <p className="font-semibold text-red-300 mb-1">
+                  Why pair with TV Code?
+                </p>
+                <p className="text-slate-300">
+                  YouTube TV on Roku has proprietary stream encryption. Pairing your tablet gives you a direct, lag-free link so tapping channels on the tablet plays seamlessly on the big screen!
+                </p>
+              </div>
+
+              <div className="space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-slate-800 text-red-400 font-bold flex items-center justify-center shrink-0 text-[11px] border border-slate-700">
+                    1
+                  </div>
+                  <div>
+                    <strong>On your Roku TV</strong>: Open YouTube TV &rarr; Click your profile icon &rarr; <strong>Settings</strong> &rarr; <strong>Link with TV Code</strong>.
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-slate-800 text-red-400 font-bold flex items-center justify-center shrink-0 text-[11px] border border-slate-700">
+                    2
+                  </div>
+                  <div>
+                    <strong>On this tablet</strong>: Click the button below and type the 12-digit code shown on the TV screen.
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    window.open('https://tv.youtube.com/pair', '_blank');
+                  }}
+                  className="w-full py-3 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-900/40 flex items-center justify-center gap-2 transition-all active:scale-95"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>Open YouTube TV Pairing Page (tv.youtube.com/pair)</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
