@@ -8,6 +8,7 @@ client/dist/
 # Environment and local data
 .env
 .env.local
+data/youtube_presets.json
 *.log
 npm-debug.log*
 yarn-debug.log*
