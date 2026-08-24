@@ -10,7 +10,8 @@ import {
   LayoutGrid,
   Radio,
   Globe,
-  Columns
+  Columns,
+  PlaySquare
 } from 'lucide-react';
 
 export default function DeviceHeader({
@@ -136,7 +137,7 @@ export default function DeviceHeader({
             }`}
           >
             <Radio className="w-3.5 h-3.5" />
-            <span>Remote Only</span>
+            <span>Remote</span>
           </button>
           <button
             onClick={() => onTabChange('apps')}
@@ -146,6 +147,15 @@ export default function DeviceHeader({
           >
             <LayoutGrid className="w-3.5 h-3.5" />
             <span>Channels</span>
+          </button>
+          <button
+            onClick={() => onTabChange('youtubetv')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              activeTab === 'youtubetv' ? 'bg-red-600 text-white shadow' : 'text-slate-400 hover:text-red-300'
+            }`}
+          >
+            <PlaySquare className="w-3.5 h-3.5" />
+            <span>YouTube TV</span>
           </button>
           <button
             onClick={() => onTabChange('web')}

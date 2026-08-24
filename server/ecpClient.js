@@ -317,6 +317,38 @@ class RokuEcpClient {
       this.handleEcpError(err, `launch web URL via ${strategy}`);
     }
   }
+
+  /**
+   * Deep links directly into a YouTube TV channel or search query (App ID 195316)
+   */
+  async launchYouTubeTvChannel(ip, contentId, query = '') {
+    const baseUrl = this.getBaseUrl(ip);
+    let url = `${baseUrl}/launch/195316`;
+    const params = new URLSearchParams();
+
+    if (contentId) {
+      params.append('contentId', contentId);
+      params.append('mediaType', 'live');
+    }
+    if (query) {
+      params.append('query', query);
+    }
+
+    const qs = params.toString();
+    if (qs) {
+      url += `?${qs}`;
+    }
+
+    try {
+      const response = await axios.post(url, '', {
+        headers: { 'Content-Length': '0' },
+        timeout: 4000
+      });
+      return { success: true, status: response.status, contentId, query };
+    } catch (err) {
+      this.handleEcpError(err, `tune YouTube TV channel '${contentId || query}'`);
+    }
+  }
 }
 
 module.exports = new RokuEcpClient();

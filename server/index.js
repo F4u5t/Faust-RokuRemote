@@ -265,6 +265,46 @@ app.delete('/api/bookmarks/:id', (req, res) => {
   res.json({ success: true });
 });
 
+// --- YouTube TV Presets Endpoints ---
+
+const youtubePresets = require('./youtubePresets');
+
+app.get('/api/youtubetv/presets', (req, res) => {
+  res.json({
+    success: true,
+    presets: youtubePresets.getAll(),
+    library: youtubePresets.getLibrary()
+  });
+});
+
+app.post('/api/youtubetv/presets', (req, res) => {
+  const newPreset = youtubePresets.add(req.body);
+  res.json({ success: true, preset: newPreset, presets: youtubePresets.getAll() });
+});
+
+app.delete('/api/youtubetv/presets/:id', (req, res) => {
+  youtubePresets.delete(req.params.id);
+  res.json({ success: true, presets: youtubePresets.getAll() });
+});
+
+app.post('/api/youtubetv/reorder', (req, res) => {
+  const { orderedIds } = req.body;
+  const reordered = youtubePresets.reorder(orderedIds);
+  res.json({ success: true, presets: reordered });
+});
+
+app.post('/api/youtubetv/launch', async (req, res) => {
+  const { ip, contentId, query } = req.body;
+  if (!ip) return res.status(400).json({ success: false, error: 'ip is required' });
+
+  try {
+    const result = await ecp.launchYouTubeTvChannel(ip, contentId, query);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // --- Static Frontend in Production ---
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(clientDist));
