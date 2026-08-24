@@ -378,8 +378,8 @@ class RokuEcpClient {
 
     if (volumeBoost) {
       try {
-        // Set volume to 28 so it's clearly audible
-        await this.setVolume(ip, 28);
+        // Set volume to 15
+        await this.setVolume(ip, 15);
       } catch (e) {
         // ignore volume error
       }

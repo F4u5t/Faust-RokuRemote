@@ -212,7 +212,7 @@ export default function WebLauncherModal({
               className="accent-purple-500 w-3.5 h-3.5 rounded"
             />
             <Volume2 className="w-3.5 h-3.5 text-purple-400" />
-            <span className="text-[11px] font-medium">Auto-Boost Volume (28)</span>
+            <span className="text-[11px] font-medium">Set Volume (15)</span>
           </label>
         </div>
 
