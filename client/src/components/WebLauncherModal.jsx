@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Globe,
   ExternalLink,
@@ -15,83 +16,10 @@ import {
   Flame,
   Volume2,
   Sparkles,
-  Radio
+  Edit2,
+  RotateCcw,
+  X
 } from 'lucide-react';
-
-const PRANK_PRESETS = [
-  {
-    id: 'rickroll',
-    title: 'Rick Roll 🕺',
-    subtitle: 'Never Gonna Give You Up',
-    videoId: 'dQw4w9WgXcQ',
-    gradient: 'from-amber-500 to-rose-600',
-    border: 'border-amber-500/40',
-    badge: 'Classic'
-  },
-  {
-    id: 'ghost',
-    title: 'Spooky Screams 👻',
-    subtitle: 'Haunted Ambience',
-    videoId: 'qZwtD2PqA_E',
-    gradient: 'from-purple-600 to-indigo-900',
-    border: 'border-purple-500/40',
-    badge: 'House Sitter'
-  },
-  {
-    id: 'curb',
-    title: 'Curb Theme 🎺',
-    subtitle: 'Awkward Timing',
-    videoId: 'Ag1o3ko3jWA',
-    gradient: 'from-emerald-600 to-teal-800',
-    border: 'border-emerald-500/40',
-    badge: 'Meme'
-  },
-  {
-    id: 'sax',
-    title: 'Epic Sax Guy 🎷',
-    subtitle: 'Endless Grooves',
-    videoId: '8ZcmTl_1ER8',
-    gradient: 'from-pink-500 to-fuchsia-700',
-    border: 'border-pink-500/40',
-    badge: '10 Hours'
-  },
-  {
-    id: 'airhorn',
-    title: 'MLG Airhorn 🚨',
-    subtitle: 'Loud Alert',
-    videoId: '2Z4m4lnjxkY',
-    gradient: 'from-red-600 to-orange-600',
-    border: 'border-red-500/40',
-    badge: 'Loud'
-  },
-  {
-    id: 'cena',
-    title: 'John Cena 💥',
-    subtitle: 'AND HIS NAME IS...',
-    videoId: '-cZ7ndjhhzk',
-    gradient: 'from-blue-600 to-cyan-600',
-    border: 'border-blue-500/40',
-    badge: 'Banger'
-  },
-  {
-    id: 'dramatic',
-    title: 'Dramatic Look 🍿',
-    subtitle: 'Dramatic Chipmunk',
-    videoId: 'a1Y73sPHKxw',
-    gradient: 'from-amber-600 to-yellow-700',
-    border: 'border-amber-500/40',
-    badge: 'Shock'
-  },
-  {
-    id: 'careless',
-    title: 'Careless Whisper 🎷',
-    subtitle: 'Smooth Sax Solo',
-    videoId: 'GaoLU6zKaws',
-    gradient: 'from-rose-600 to-purple-800',
-    border: 'border-rose-500/40',
-    badge: 'Romance'
-  }
-];
 
 export default function WebLauncherModal({
   bookmarks,
@@ -104,27 +32,51 @@ export default function WebLauncherModal({
   const [targetUrl, setTargetUrl] = useState('');
   const [strategy, setStrategy] = useState('dev_channel');
   const [customAppId, setCustomAppId] = useState('');
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddBookmarkForm, setShowAddBookmarkForm] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newUrl, setNewUrl] = useState('');
   const [newStrategy, setNewStrategy] = useState('dev_channel');
   const [newDescription, setNewDescription] = useState('');
   const [statusMessage, setStatusMessage] = useState(null);
 
-  // Instant Video Launcher state
+  // Soundboard state
+  const [soundboardPresets, setSoundboardPresets] = useState([]);
   const [customVideoInput, setCustomVideoInput] = useState('');
   const [boostVolume, setBoostVolume] = useState(true);
   const [isFiring, setIsFiring] = useState(false);
+  const [editingPreset, setEditingPreset] = useState(null);
+  const [showAddPresetForm, setShowAddPresetForm] = useState(false);
+  
+  // New / Edit preset form fields
+  const [formTitle, setFormTitle] = useState('');
+  const [formSubtitle, setFormSubtitle] = useState('');
+  const [formVideoId, setFormVideoId] = useState('');
+  const [formBadge, setFormBadge] = useState('');
+
+  const fetchSoundboard = async () => {
+    try {
+      const res = await axios.get('/api/soundboard');
+      if (res.data && res.data.success) {
+        setSoundboardPresets(res.data.presets || []);
+      }
+    } catch (e) {
+      console.warn('Failed to load soundboard presets:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchSoundboard();
+  }, []);
 
   const handleFireVideo = async (videoIdOrUrl, label = 'Video') => {
     if (disabled || !videoIdOrUrl) return;
     setIsFiring(true);
-    setStatusMessage({ type: 'info', text: `Blasting "${label}" to Roku TV...` });
+    setStatusMessage({ type: 'info', text: `Waking TV & playing "${label}"...` });
     try {
       if (onPlayVideo) {
         await onPlayVideo(videoIdOrUrl, boostVolume);
       }
-      setStatusMessage({ type: 'success', text: `Playing "${label}" on TV!` });
+      setStatusMessage({ type: 'success', text: `Playing "${label}" on TV (Vol: 15)!` });
       setTimeout(() => setStatusMessage(null), 4500);
     } catch (err) {
       setStatusMessage({ type: 'error', text: err.message || 'Failed to play video' });
@@ -138,6 +90,87 @@ export default function WebLauncherModal({
     if (!customVideoInput.trim()) return;
     handleFireVideo(customVideoInput, 'Custom Video');
     setCustomVideoInput('');
+  };
+
+  const openAddPresetForm = () => {
+    setEditingPreset(null);
+    setFormTitle('');
+    setFormSubtitle('');
+    setFormVideoId('');
+    setFormBadge('Custom');
+    setShowAddPresetForm(true);
+  };
+
+  const openEditPresetForm = (p, e) => {
+    e.stopPropagation();
+    setEditingPreset(p);
+    setFormTitle(p.title || '');
+    setFormSubtitle(p.subtitle || '');
+    setFormVideoId(p.videoId || '');
+    setFormBadge(p.badge || 'Meme');
+    setShowAddPresetForm(true);
+  };
+
+  const handleSavePreset = async (e) => {
+    e.preventDefault();
+    if (!formTitle.trim() || !formVideoId.trim()) return;
+
+    try {
+      if (editingPreset) {
+        const res = await axios.put(`/api/soundboard/${editingPreset.id}`, {
+          title: formTitle,
+          subtitle: formSubtitle,
+          videoId: formVideoId,
+          badge: formBadge
+        });
+        if (res.data.success) {
+          setSoundboardPresets(res.data.presets);
+          setStatusMessage({ type: 'success', text: `Updated "${formTitle}"!` });
+        }
+      } else {
+        const res = await axios.post('/api/soundboard', {
+          title: formTitle,
+          subtitle: formSubtitle,
+          videoId: formVideoId,
+          badge: formBadge
+        });
+        if (res.data.success) {
+          setSoundboardPresets(res.data.presets);
+          setStatusMessage({ type: 'success', text: `Added "${formTitle}"!` });
+        }
+      }
+      setShowAddPresetForm(false);
+      setEditingPreset(null);
+      setTimeout(() => setStatusMessage(null), 3000);
+    } catch (err) {
+      setStatusMessage({ type: 'error', text: err.response?.data?.error || 'Failed to save preset' });
+    }
+  };
+
+  const handleDeletePreset = async (id, e) => {
+    e.stopPropagation();
+    try {
+      const res = await axios.delete(`/api/soundboard/${id}`);
+      if (res.data.success) {
+        setSoundboardPresets(res.data.presets);
+      }
+    } catch (err) {
+      console.error('Failed to delete preset:', err);
+    }
+  };
+
+  const handleResetPresets = async () => {
+    if (!window.confirm('Reset all soundboard presets to default list?')) return;
+    try {
+      const res = await axios.post('/api/soundboard/reset');
+      if (res.data.success) {
+        setSoundboardPresets(res.data.presets);
+        setStatusMessage({ type: 'success', text: 'Reset soundboard to defaults!' });
+        setTimeout(() => setStatusMessage(null), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to reset presets:', err);
+    }
   };
 
   const handleDirectLaunch = async (e) => {
@@ -180,7 +213,7 @@ export default function WebLauncherModal({
     setNewTitle('');
     setNewUrl('');
     setNewDescription('');
-    setShowAddForm(false);
+    setShowAddBookmarkForm(false);
   };
 
   return (
@@ -196,25 +229,128 @@ export default function WebLauncherModal({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold text-slate-100">Instant Video & Prank Soundboard 🎭</h2>
-                <span className="px-2 py-0.5 rounded-full bg-red-600/30 text-red-300 border border-red-500/40 text-[10px] font-bold">1-Click Blast</span>
+                <span className="px-2 py-0.5 rounded-full bg-red-600/30 text-red-300 border border-red-500/40 text-[10px] font-bold">Auto TV Wake & Play</span>
               </div>
               <p className="text-[11px] text-slate-400">
-                Instantly wake your TV and auto-play any YouTube video (Rick Roll, jump scares, memes, or custom URLs).
+                Wakes TV from sleep, un-mutes, and auto-plays YouTube videos or memes on command.
               </p>
             </div>
           </div>
 
-          <label className="flex items-center gap-2 cursor-pointer bg-slate-950/70 px-3 py-1.5 rounded-xl border border-slate-700/60 text-xs text-slate-300 hover:text-white transition-colors">
-            <input
-              type="checkbox"
-              checked={boostVolume}
-              onChange={(e) => setBoostVolume(e.target.checked)}
-              className="accent-purple-500 w-3.5 h-3.5 rounded"
-            />
-            <Volume2 className="w-3.5 h-3.5 text-purple-400" />
-            <span className="text-[11px] font-medium">Set Volume (15)</span>
-          </label>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openAddPresetForm}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 text-xs font-semibold transition-colors shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5 text-purple-400" />
+              <span>Add Button</span>
+            </button>
+
+            <button
+              onClick={handleResetPresets}
+              title="Reset presets to default list"
+              className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+
+            <label className="flex items-center gap-2 cursor-pointer bg-slate-950/70 px-3 py-1.5 rounded-xl border border-slate-700/60 text-xs text-slate-300 hover:text-white transition-colors">
+              <input
+                type="checkbox"
+                checked={boostVolume}
+                onChange={(e) => setBoostVolume(e.target.checked)}
+                className="accent-purple-500 w-3.5 h-3.5 rounded"
+              />
+              <Volume2 className="w-3.5 h-3.5 text-purple-400" />
+              <span className="text-[11px] font-medium">Auto Vol (15)</span>
+            </label>
+          </div>
         </div>
+
+        {/* Add/Edit Preset Drawer */}
+        {showAddPresetForm && (
+          <form onSubmit={handleSavePreset} className="bg-slate-950/90 border border-purple-500/40 rounded-2xl p-4 mb-3 space-y-3 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                <Edit2 className="w-3.5 h-3.5" />
+                <span>{editingPreset ? `Edit Button: ${editingPreset.title}` : 'Add New Instant Video Button'}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowAddPresetForm(false); setEditingPreset(null); }}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-slate-400 font-medium block mb-1 uppercase">Button Title</label>
+                <input
+                  type="text"
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  placeholder="e.g. Weird Singing Guy 👽"
+                  required
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-slate-400 font-medium block mb-1 uppercase">Subtitle / Artist</label>
+                <input
+                  type="text"
+                  value={formSubtitle}
+                  onChange={(e) => setFormSubtitle(e.target.value)}
+                  placeholder="e.g. Vitas - 7th Element"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="sm:col-span-2">
+                <label className="text-[10px] text-slate-400 font-medium block mb-1 uppercase">YouTube URL or Video ID</label>
+                <input
+                  type="text"
+                  value={formVideoId}
+                  onChange={(e) => setFormVideoId(e.target.value)}
+                  placeholder="e.g. https://youtu.be/tVj0ZTS4WF4 or tVj0ZTS4WF4"
+                  required
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-slate-400 font-medium block mb-1 uppercase">Badge Tag</label>
+                <input
+                  type="text"
+                  value={formBadge}
+                  onChange={(e) => setFormBadge(e.target.value)}
+                  placeholder="e.g. Meme, Classic"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => { setShowAddPresetForm(false); setEditingPreset(null); }}
+                className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs hover:bg-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-1.5 rounded-lg bg-purple-600 text-white font-medium text-xs hover:bg-purple-500 shadow-md shadow-purple-600/20"
+              >
+                {editingPreset ? 'Save Changes' : 'Create Button'}
+              </button>
+            </div>
+          </form>
+        )}
 
         {/* Status Notification */}
         {statusMessage && (
@@ -230,26 +366,43 @@ export default function WebLauncherModal({
 
         {/* 1-Click Prank Preset Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-2.5">
-          {PRANK_PRESETS.map((p) => (
-            <button
+          {soundboardPresets.map((p) => (
+            <div
               key={p.id}
               onClick={() => handleFireVideo(p.videoId, p.title)}
-              disabled={disabled || isFiring}
-              className={`group relative overflow-hidden text-left p-3 rounded-xl bg-slate-950/80 hover:bg-slate-900 border ${p.border} hover:border-purple-400/60 transition-all duration-200 shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-50`}
+              className={`group relative overflow-hidden text-left p-3 rounded-xl bg-slate-950/80 hover:bg-slate-900 border ${p.border || 'border-slate-800'} hover:border-purple-400/60 transition-all duration-200 shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer ${disabled || isFiring ? 'opacity-50 pointer-events-none' : ''}`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-slate-200">
-                  {p.badge}
+                  {p.badge || 'Sound'}
                 </span>
-                <PlayCircle className="w-4 h-4 text-slate-400 group-hover:text-amber-400 transition-colors" />
+                
+                {/* Actions: Edit & Delete */}
+                <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => openEditPresetForm(p, e)}
+                    title="Edit button video URL or title"
+                    className="p-1 rounded bg-slate-800/80 hover:bg-purple-600 text-slate-400 hover:text-white transition-colors"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={(e) => handleDeletePreset(p.id, e)}
+                    title="Delete button"
+                    className="p-1 rounded bg-slate-800/80 hover:bg-red-600 text-slate-400 hover:text-white transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
+
               <div className="font-bold text-xs text-slate-100 group-hover:text-amber-300 truncate transition-colors">
                 {p.title}
               </div>
               <div className="text-[10px] text-slate-400 truncate">
-                {p.subtitle}
+                {p.subtitle || 'Click to play'}
               </div>
-            </button>
+            </div>
           ))}
         </div>
 
@@ -259,9 +412,9 @@ export default function WebLauncherModal({
             type="text"
             value={customVideoInput}
             onChange={(e) => setCustomVideoInput(e.target.value)}
-            placeholder="Paste any YouTube URL or Video ID (e.g. https://youtu.be/dQw4w9WgXcQ)"
+            placeholder="Paste any YouTube URL or Video ID (e.g. https://youtu.be/tVj0ZTS4WF4)"
             disabled={disabled || isFiring}
-            className="flex-1 bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+            className="flex-1 bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors font-mono"
           />
           <button
             type="submit"
@@ -355,16 +508,16 @@ export default function WebLauncherModal({
               <span>Saved Web Apps & Dashboards</span>
             </div>
             <button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={() => setShowAddBookmarkForm(!showAddBookmarkForm)}
               className="text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>{showAddForm ? 'Cancel' : 'Add Web App'}</span>
+              <span>{showAddBookmarkForm ? 'Cancel' : 'Add Web App'}</span>
             </button>
           </div>
 
           {/* Add Web App Bookmark Drawer */}
-          {showAddForm && (
+          {showAddBookmarkForm && (
             <form onSubmit={handleCreateBookmark} className="bg-slate-900 border border-purple-500/40 rounded-2xl p-4 space-y-3 shadow-xl">
               <div className="text-xs font-bold text-purple-300">New Web App Bookmark</div>
               <input
@@ -393,7 +546,7 @@ export default function WebLauncherModal({
               <div className="flex justify-end gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={() => setShowAddForm(false)}
+                  onClick={() => setShowAddBookmarkForm(false)}
                   className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs hover:bg-slate-700"
                 >
                   Cancel

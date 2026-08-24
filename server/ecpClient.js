@@ -365,6 +365,7 @@ class RokuEcpClient {
 
   /**
    * Plays any YouTube video directly on standard YouTube (App ID 837)
+   * Automatically wakes TV from standby/off mode if needed
    */
   async playYouTubeVideo(ip, videoInput, volumeBoost = false) {
     let videoId = (videoInput || '').trim();
@@ -376,6 +377,27 @@ class RokuEcpClient {
       videoId = videoId.split('shorts/')[1].split('?')[0];
     }
 
+    // Check if TV is in standby/off and wake it up
+    try {
+      const info = await this.getDeviceInfo(ip);
+      if (info && info.powerMode && info.powerMode !== 'PowerOn') {
+        // TV is sleeping or in standby ('Ready' or 'DisplayOff')
+        await this.keypress(ip, 'PowerOn');
+        await new Promise(r => setTimeout(r, 1500)); // wait for display & network stack
+      } else {
+        // Send PowerOn / Home to dismiss screensaver or wake display
+        await this.keypress(ip, 'PowerOn');
+      }
+    } catch (e) {
+      // If query failed (e.g. low power sleep), attempt blind PowerOn
+      try {
+        await this.keypress(ip, 'PowerOn');
+        await new Promise(r => setTimeout(r, 1200));
+      } catch (err) {
+        // continue
+      }
+    }
+
     if (volumeBoost) {
       try {
         // Set volume to 15
@@ -385,9 +407,9 @@ class RokuEcpClient {
       }
     }
 
-    // Launch YouTube App ID 837 with contentID
+    // Launch YouTube App ID 837 with contentID and contentId
     const baseUrl = this.getBaseUrl(ip);
-    const launchUrl = `${baseUrl}/launch/837?contentID=${encodeURIComponent(videoId)}&mediaType=live`;
+    const launchUrl = `${baseUrl}/launch/837?contentID=${encodeURIComponent(videoId)}&contentId=${encodeURIComponent(videoId)}`;
 
     try {
       const response = await axios.post(launchUrl, '', {

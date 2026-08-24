@@ -280,6 +280,35 @@ app.delete('/api/bookmarks/:id', (req, res) => {
   res.json({ success: true });
 });
 
+// --- Soundboard & Instant Video Presets Endpoints ---
+
+const soundboard = require('./soundboard');
+
+app.get('/api/soundboard', (req, res) => {
+  res.json({ success: true, presets: soundboard.getAll() });
+});
+
+app.post('/api/soundboard', (req, res) => {
+  const created = soundboard.add(req.body);
+  res.json({ success: true, preset: created, presets: soundboard.getAll() });
+});
+
+app.put('/api/soundboard/:id', (req, res) => {
+  const updated = soundboard.update(req.params.id, req.body);
+  if (!updated) return res.status(404).json({ success: false, error: 'Preset not found' });
+  res.json({ success: true, preset: updated, presets: soundboard.getAll() });
+});
+
+app.delete('/api/soundboard/:id', (req, res) => {
+  soundboard.delete(req.params.id);
+  res.json({ success: true, presets: soundboard.getAll() });
+});
+
+app.post('/api/soundboard/reset', (req, res) => {
+  const resetList = soundboard.reset();
+  res.json({ success: true, presets: resetList });
+});
+
 // --- YouTube TV Presets Endpoints ---
 
 const youtubePresets = require('./youtubePresets');
