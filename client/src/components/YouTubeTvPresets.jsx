@@ -209,7 +209,7 @@ export default function YouTubeTvPresets({
       )}
 
       {/* Main Presets Grid with Touch Scrollbar (Aligned with Compact Remote Height) */}
-      <div className="touch-scroll-panel max-h-[480px] lg:max-h-[500px] xl:max-h-[520px] 2xl:max-h-[550px] pr-1.5 pb-2 overflow-y-auto">
+      <div className="touch-scroll-panel max-h-[390px] sm:max-h-[410px] md:max-h-[420px] lg:max-h-[430px] xl:max-h-[450px] pr-2 pb-2 overflow-y-auto">
         {presets.length === 0 ? (
           <div className="p-12 text-center bg-slate-900/40 rounded-3xl border border-slate-800 flex flex-col items-center gap-3">
             <Tv className="w-12 h-12 text-slate-600" />

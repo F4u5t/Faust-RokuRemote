@@ -157,8 +157,8 @@ export default function AppsGrid({
         </button>
       </div>
 
-      {/* Touch-Friendly Scrollable Channels Workspace Container (Aligned with Remote Height) */}
-      <div className="touch-scroll-panel max-h-[480px] lg:max-h-[500px] xl:max-h-[520px] 2xl:max-h-[550px] space-y-3.5 pr-1.5 pb-2 overflow-y-auto">
+      {/* Touch-Friendly Scrollable Channels Workspace Container (Shorter to eliminate browser vertical scroll) */}
+      <div className="touch-scroll-panel max-h-[390px] sm:max-h-[410px] md:max-h-[420px] lg:max-h-[430px] xl:max-h-[450px] space-y-3 pr-2 pb-2 overflow-y-auto">
         
         {/* Quick Favorites Section & Drop Zone */}
         {!searchQuery && (
