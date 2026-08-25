@@ -332,19 +332,21 @@ export default function App() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         activeApp={activeApp}
+        onKeyPress={handleKeyPress}
+        disabled={!activeDevice}
       />
 
       {/* Limited ECP Mode Warning Banner */}
       {activeDevice && activeDevice.ecpMode === 'limited' && (
-        <div className="max-w-7xl mx-auto w-full px-4 mt-3">
-          <div className="p-3.5 rounded-2xl bg-amber-950/40 border border-amber-600/50 text-amber-200 text-xs shadow-lg animate-in fade-in">
+        <div className="max-w-7xl mx-auto w-full px-4 mt-2">
+          <div className="p-3 rounded-2xl bg-amber-950/40 border border-amber-600/50 text-amber-200 text-xs shadow-lg animate-in fade-in">
             <div className="font-bold flex items-center gap-1.5 text-amber-300 mb-1">
               <span>⚠️ Remote Control Blocked by Roku TV Settings</span>
             </div>
-            <p className="text-[11px] leading-relaxed text-amber-200/90 mb-2">
+            <p className="text-[11px] leading-relaxed text-amber-200/90 mb-1.5">
               Your Roku TV's mobile control is set to <strong>"Limited"</strong>, which blocks remote key commands.
             </p>
-            <div className="bg-slate-950/60 rounded-xl p-2.5 text-[11px] font-mono text-amber-300 border border-amber-900/40">
+            <div className="bg-slate-950/60 rounded-xl p-2 text-[10px] font-mono text-amber-300 border border-amber-900/40">
               TV Menu: <strong>Settings &gt; System &gt; Advanced system settings &gt; Control by mobile apps &gt; Network access</strong> &rarr; Select <strong>"Permissive"</strong> (or "Default").
             </div>
           </div>
@@ -352,15 +354,15 @@ export default function App() {
       )}
 
       {/* Main Responsive Content Area */}
-      <main className="flex-1 w-full max-w-[1700px] mx-auto px-3 sm:px-6 py-3 overflow-y-auto pb-24 md:pb-4">
+      <main className="flex-1 w-full max-w-[1700px] mx-auto px-2 sm:px-4 py-2 overflow-y-auto pb-20 md:pb-2">
         
         {/* Split Dashboard View (Tablet / Desktop) */}
         {activeTab === 'split' ? (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-start">
             
             {/* Left Column: Tactile Remote Control with Vertical Volume Panel */}
-            <div className="md:col-span-5 lg:col-span-4 xl:col-span-4 sticky top-16 flex justify-center">
-              <div className="w-full max-w-[380px]">
+            <div className="md:col-span-5 lg:col-span-4 xl:col-span-4 sticky top-14 flex justify-center">
+              <div className="w-full max-w-[360px]">
                 <RemoteControl
                   onKeyPress={handleKeyPress}
                   onSendText={handleSendText}
@@ -373,49 +375,49 @@ export default function App() {
             </div>
 
             {/* Right Column: Channels, YouTube TV & Web Apps Workspace */}
-            <div className="md:col-span-7 lg:col-span-8 xl:col-span-8 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-4 shadow-xl">
+            <div className="md:col-span-7 lg:col-span-8 xl:col-span-8 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-3 sm:p-3.5 shadow-xl">
               
               {/* Right Pane Sub-Tabs */}
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setSplitRightTab('apps')}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       splitRightTab === 'apps'
                         ? 'bg-purple-600/30 text-purple-300 border border-purple-500/40 shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                     }`}
                   >
-                    <Grid className="w-4 h-4" />
+                    <Grid className="w-3.5 h-3.5" />
                     <span>Channels</span>
                   </button>
 
                   <button
                     onClick={() => setSplitRightTab('youtubetv')}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       splitRightTab === 'youtubetv'
                         ? 'bg-red-600/30 text-red-300 border border-red-500/40 shadow-sm'
                         : 'text-slate-400 hover:text-red-300 hover:bg-slate-800/60'
                     }`}
                   >
-                    <PlaySquare className="w-4 h-4 text-red-400" />
+                    <PlaySquare className="w-3.5 h-3.5 text-red-400" />
                     <span>YouTube TV</span>
                   </button>
 
                   <button
                     onClick={() => setSplitRightTab('web')}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       splitRightTab === 'web'
                         ? 'bg-purple-600/30 text-purple-300 border border-purple-500/40 shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                     }`}
                   >
-                    <Globe className="w-4 h-4" />
+                    <Globe className="w-3.5 h-3.5" />
                     <span>Web Apps</span>
                   </button>
                 </div>
 
-                <div className="text-xs text-slate-500 font-medium hidden sm:block">
+                <div className="text-[11px] text-slate-500 font-medium hidden sm:block">
                   {splitRightTab === 'apps' && `${apps.length} Channels`}
                   {splitRightTab === 'youtubetv' && `${youtubePresets.length} Presets`}
                   {splitRightTab === 'web' && `${bookmarks.length} Bookmarks`}

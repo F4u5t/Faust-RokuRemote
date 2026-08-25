@@ -133,32 +133,32 @@ export default function AppsGrid({
   );
 
   return (
-    <div className="w-full flex flex-col gap-3">
+    <div className="w-full flex flex-col gap-2.5">
       
       {/* Search and Refresh Bar (Sticky at top of channels workspace) */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search installed channels..."
-            className="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+            className="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
           />
         </div>
         <button
           onClick={onRefreshApps}
           disabled={isLoading || disabled}
           title="Reload installed apps from Roku"
-          className="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 rounded-xl text-slate-300 disabled:opacity-40 transition-colors"
+          className="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 rounded-xl text-slate-300 disabled:opacity-40 transition-colors"
         >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-purple-400' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-purple-400' : ''}`} />
         </button>
       </div>
 
       {/* Touch-Friendly Scrollable Channels Workspace Container (Aligned with Remote Height) */}
-      <div className="touch-scroll-panel max-h-[550px] xl:max-h-[575px] space-y-4 pr-1.5 pb-2">
+      <div className="touch-scroll-panel max-h-[480px] lg:max-h-[500px] xl:max-h-[520px] 2xl:max-h-[550px] space-y-3.5 pr-1.5 pb-2 overflow-y-auto">
         
         {/* Quick Favorites Section & Drop Zone */}
         {!searchQuery && (
@@ -169,14 +169,14 @@ export default function AppsGrid({
             }}
             onDragLeave={() => setIsOverFavoritesZone(false)}
             onDrop={(e) => handleFavoritesDrop(e)}
-            className={`rounded-3xl p-3.5 transition-all ${
+            className={`rounded-2xl p-2.5 sm:p-3 transition-all ${
               isOverFavoritesZone
                 ? 'bg-purple-950/40 border-2 border-dashed border-purple-400 shadow-xl shadow-purple-900/30'
                 : 'bg-slate-900/70 border border-slate-800 shadow-md'
             }`}
           >
-            <div className="flex items-center justify-between mb-2.5 px-1">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300 uppercase tracking-wider">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span>Favorites & Quick Launch</span>
               </div>
@@ -186,15 +186,15 @@ export default function AppsGrid({
             </div>
 
             {favoriteApps.length === 0 ? (
-              <div className="border-2 border-dashed border-slate-800 rounded-2xl p-6 text-center text-slate-400">
-                <PlusCircle className="w-6 h-6 mx-auto mb-1.5 text-purple-400/80" />
+              <div className="border-2 border-dashed border-slate-800 rounded-xl p-4 text-center text-slate-400">
+                <PlusCircle className="w-5 h-5 mx-auto mb-1 text-purple-400/80" />
                 <p className="text-xs font-medium">No favorite channels pinned yet.</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-[10px] text-slate-500 mt-0.5">
                   Drag any channel from below or tap the ⭐ icon to add it.
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10 gap-2.5">
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10 gap-2">
                 {favoriteApps.map((app, index) => {
                   const isActive = activeApp && String(activeApp.id) === String(app.id);
                   return (
@@ -208,7 +208,7 @@ export default function AppsGrid({
                         e.stopPropagation();
                         handleFavoritesDrop(e, index);
                       }}
-                      className={`group relative flex flex-col items-center bg-slate-800/80 hover:bg-slate-700/80 border rounded-2xl p-2 transition-all shadow cursor-grab active:cursor-grabbing ${
+                      className={`group relative flex flex-col items-center bg-slate-800/80 hover:bg-slate-700/80 border rounded-xl p-1.5 transition-all shadow cursor-grab active:cursor-grabbing ${
                         isActive ? 'border-emerald-500/60 bg-emerald-950/30' : 'border-slate-700/60 hover:border-purple-500/50'
                       }`}
                     >
@@ -216,9 +216,9 @@ export default function AppsGrid({
                       <button
                         onClick={(e) => toggleFavorite(app.id, e)}
                         title="Remove from favorites"
-                        className="absolute top-1 right-1 p-1 rounded-full bg-slate-900/80 hover:bg-red-950 text-amber-400 hover:text-red-400 transition-colors z-10"
+                        className="absolute top-1 right-1 p-0.5 rounded-full bg-slate-900/80 hover:bg-red-950 text-amber-400 hover:text-red-400 transition-colors z-10"
                       >
-                        <Star className="w-3 h-3 fill-amber-400" />
+                        <Star className="w-2.5 h-2.5 fill-amber-400" />
                       </button>
 
                       {/* Launch Button */}
@@ -227,7 +227,7 @@ export default function AppsGrid({
                         disabled={disabled}
                         className="w-full flex flex-col items-center"
                       >
-                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center mb-1.5 shadow-inner">
+                        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center mb-1 shadow-inner">
                           <img
                             src={app.iconUrl}
                             alt={app.name}
@@ -237,7 +237,7 @@ export default function AppsGrid({
                             }}
                           />
                         </div>
-                        <span className="text-[11px] font-medium text-slate-200 truncate w-full text-center">
+                        <span className="text-[10px] sm:text-[11px] font-medium text-slate-200 truncate w-full text-center">
                           {app.name}
                         </span>
                       </button>
@@ -256,14 +256,14 @@ export default function AppsGrid({
                 }}
                 onDragLeave={() => setIsOverRemoveZone(false)}
                 onDrop={handleRemoveDrop}
-                className={`mt-3 border-2 border-dashed rounded-2xl p-3 text-center transition-all ${
+                className={`mt-2 border-2 border-dashed rounded-xl p-2.5 text-center transition-all ${
                   isOverRemoveZone
                     ? 'bg-red-950/60 border-red-500 text-red-300 scale-102'
                     : 'bg-slate-950/50 border-red-900/40 text-red-400/80'
                 }`}
               >
                 <div className="flex items-center justify-center gap-1.5 text-xs font-semibold">
-                  <Trash2 className="w-4 h-4 text-red-400" />
+                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
                   <span>Drop here to remove from Favorites</span>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function AppsGrid({
 
         {/* All Installed Channels Grid */}
         <div>
-          <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">
+          <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">
             <div className="flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-purple-400" />
               <span>All Installed Channels ({filteredApps.length})</span>
@@ -284,11 +284,11 @@ export default function AppsGrid({
           </div>
 
           {filteredApps.length === 0 ? (
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 text-center text-slate-400">
               {apps.length === 0 ? (
                 <div>
-                  <p className="text-sm font-medium mb-2">No apps loaded.</p>
-                  <p className="text-xs text-slate-500 mb-3">Ensure your Roku TV is turned on and connected.</p>
+                  <p className="text-xs font-medium mb-1.5">No apps loaded.</p>
+                  <p className="text-[11px] text-slate-500 mb-2.5">Ensure your Roku TV is turned on and connected.</p>
                   <button
                     onClick={onRefreshApps}
                     className="px-3 py-1.5 rounded-lg bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-medium hover:bg-purple-600/40 transition-colors"
@@ -297,11 +297,11 @@ export default function AppsGrid({
                   </button>
                 </div>
               ) : (
-                <p className="text-sm">No channels match "{searchQuery}"</p>
+                <p className="text-xs">No channels match "{searchQuery}"</p>
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2 sm:gap-2.5">
               {filteredApps.map((app) => {
                 const isFav = favoriteIds.includes(String(app.id));
                 const isActive = activeApp && String(activeApp.id) === String(app.id);
@@ -312,7 +312,7 @@ export default function AppsGrid({
                     draggable
                     onDragStart={(e) => handleDragStart(app.id, 'all', e)}
                     onDragEnd={handleDragEnd}
-                    className={`group relative flex flex-col items-center bg-slate-900/80 hover:bg-slate-800 border rounded-2xl p-2.5 transition-all text-center shadow-md cursor-grab active:cursor-grabbing ${
+                    className={`group relative flex flex-col items-center bg-slate-900/80 hover:bg-slate-800 border rounded-xl p-2 transition-all text-center shadow-md cursor-grab active:cursor-grabbing ${
                       isActive ? 'border-emerald-500/60 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'
                     }`}
                   >
@@ -320,18 +320,18 @@ export default function AppsGrid({
                     <button
                       onClick={(e) => toggleFavorite(app.id, e)}
                       title={isFav ? 'Remove from favorites' : 'Add to favorites'}
-                      className={`absolute top-1.5 right-1.5 p-1 rounded-full transition-colors z-10 ${
+                      className={`absolute top-1 right-1 p-0.5 rounded-full transition-colors z-10 ${
                         isFav
                           ? 'bg-amber-950/80 text-amber-400'
                           : 'bg-slate-950/70 text-slate-500 hover:text-amber-400 opacity-0 group-hover:opacity-100'
                       }`}
                     >
-                      <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-amber-400' : ''}`} />
+                      <Star className={`w-3 h-3 ${isFav ? 'fill-amber-400' : ''}`} />
                     </button>
 
                     {/* Active Indicator */}
                     {isActive && (
-                      <span className="absolute top-1.5 left-1.5 w-2 h-2 rounded-full bg-emerald-400 shadow-sm" />
+                      <span className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm" />
                     )}
 
                     {/* Click to Launch */}
@@ -340,7 +340,7 @@ export default function AppsGrid({
                       disabled={disabled}
                       className="w-full flex flex-col items-center"
                     >
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800 flex items-center justify-center mb-2 shadow">
+                      <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-xl overflow-hidden bg-slate-800 flex items-center justify-center mb-1 shadow">
                         <img
                           src={app.iconUrl}
                           alt={app.name}
@@ -350,11 +350,8 @@ export default function AppsGrid({
                           }}
                         />
                       </div>
-                      <span className="text-xs font-semibold text-slate-200 line-clamp-1 w-full">
+                      <span className="text-[11px] font-semibold text-slate-200 line-clamp-1 w-full">
                         {app.name}
-                      </span>
-                      <span className="text-[10px] text-slate-500 font-mono mt-0.5">
-                        ID: {app.id}
                       </span>
                     </button>
                   </div>

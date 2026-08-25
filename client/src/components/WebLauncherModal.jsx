@@ -217,7 +217,7 @@ export default function WebLauncherModal({
   };
 
   return (
-    <div className="touch-scroll-panel max-h-[550px] xl:max-h-[575px] overflow-y-auto pr-1 w-full space-y-4">
+    <div className="touch-scroll-panel max-h-[480px] lg:max-h-[500px] xl:max-h-[520px] 2xl:max-h-[550px] overflow-y-auto pr-1 w-full space-y-3.5">
       
       {/* 🎭 Instant Video & Prank Soundboard Banner */}
       <div className="bg-gradient-to-r from-purple-950/70 via-slate-900 to-indigo-950/70 border border-purple-500/30 rounded-2xl p-4 shadow-xl">
