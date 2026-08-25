@@ -479,7 +479,7 @@ export default function App() {
             )}
 
             {activeTab === 'apps' && (
-              <div className="w-full">
+              <div className="w-full bg-slate-900/40 border border-slate-800/80 rounded-3xl p-3 sm:p-3.5 shadow-xl">
                 <AppsGrid
                   apps={apps}
                   activeApp={activeApp}
@@ -493,7 +493,7 @@ export default function App() {
             )}
 
             {activeTab === 'youtubetv' && (
-              <div className="w-full">
+              <div className="w-full bg-slate-900/40 border border-slate-800/80 rounded-3xl p-3 sm:p-3.5 shadow-xl">
                 <YouTubeTvPresets
                   presets={youtubePresets}
                   library={youtubeLibrary}
@@ -507,7 +507,7 @@ export default function App() {
             )}
 
             {activeTab === 'web' && (
-              <div className="w-full">
+              <div className="w-full bg-slate-900/40 border border-slate-800/80 rounded-3xl p-3 sm:p-3.5 shadow-xl">
                 <WebLauncherModal
                   bookmarks={bookmarks}
                   onLaunchUrl={handleLaunchUrl}
